@@ -176,10 +176,10 @@ EOF
 _gen_poc_envs_folder() {
     echo "  + Estrutura de ambientes (./envs/)"
     mkdir -p envs
-    for env_file in prod-a.env prod-b.env prod-c.env; do
-        cat > "./envs/$env_file" << EOF
-# Configuração para: ${env_file%.env}
-API_BASE_URL="https://api.${env_file%.env}.com"
+    for product in prod-a prod-b prod-c; do
+        cat > "./envs/${product}.sh" << EOF
+# Configuração para: ${product%.env}
+API_BASE_URL="https://api.${product%.env}.com"
 API_KEY="insira-aqui-a-api-key"
 PING_RESOURCE="/ping"
 PING_EXPECTED_STATUS="200"

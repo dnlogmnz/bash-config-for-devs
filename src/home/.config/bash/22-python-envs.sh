@@ -4,13 +4,13 @@
 # ==========================================================================================
 
 # Histórico de comandos digitados no intepretador python
-mkdir -p "${XDG_DATA_HOME:-$HOME/.local/share}/python"  # Garante que o diretório do histórico existe
+mkdir -p "${XDG_DATA_HOME:-$HOME/.local/share}/python"
 export PYTHONHISTORY="${XDG_DATA_HOME:-$HOME/.local/share}/python/history"
 
 # Configurações do interpretador Python
-export PYTHONUNBUFFERED="1"  # Envia outputs (print, logs) diretamente para o terminal, sem uso de buffer
-export PYTHONIOENCODING="utf-8"  # Logs podem conter caracteres especiais sem quebrar o coletor de logs 
-export PYTHONDONTWRITEBYTECODE="1"  # Acelera import de módulos ao não criar arquivos .pyc (bytecode)
+export PYTHONUNBUFFERED="1"         # Outputs (print, logs) direto ao terminal, sem uso de buffer
+export PYTHONIOENCODING="utf-8"     # Logs com caracteres especiais sem quebrar o coletor de logs
+export PYTHONDONTWRITEBYTECODE="1"  # Não cria arquivos .pyc (bytecode): acelera import de módulos
 
 #-------------------------------------------------------------------------------------------
 #--- Final do script ~/.config/python-envs.sh

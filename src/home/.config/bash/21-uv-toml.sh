@@ -14,7 +14,7 @@ if [ -d "${UV_HOME}" ]; then
 
     # Cria um novo arquivo, caso ainda não exitir
     [ -r "$UV_CONFIG_FILE" ] || cat >"$UV_CONFIG_FILE" << EOF
-# =============================================================================
+#
 # Arquivo: $UV_CONF_FILE
 # Configuração global do UV
 # =============================================================================
@@ -27,6 +27,7 @@ python-downloads = "manual"
 cache-dir = "$UV_CACHE_DST"
 EOF
 
+    # Liberar variáveis de ambiente
     unset UV_CONF_FILE UV_CACHE_DST
 
 fi

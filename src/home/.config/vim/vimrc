@@ -2,22 +2,32 @@
 " --- INICIO DO BLOCO XDG ---
 " ---------------------------
 
-" Define a pasta onde deve ficar este arquivo via variável de ambiente.
-" Se você levar esse .vimrc para outro computador com Linux ou macOS, ele funcionará sem ajustes manuais.
-let $VIM_STATE = expand($XDG_STATE_HOME . '/vim')
-
-" Cria automaticamente a árvore de diretórios para evitar erros de 'permissão negada' ou 'pasta inexistente'
-if !isdirectory($VIM_STATE)
-    call mkdir($VIM_STATE . '/undo', 'p')
-    call mkdir($VIM_STATE . '/swap', 'p')
-    call mkdir($VIM_STATE . '/backup', 'p')
+" Define o diretório onde deve ficar este arquivo via variável de ambiente.
+" Este .vimrc pode ser levado para outro computador, e funcionará sem ajustes manuais.
+if empty($XDG_STATE_HOME)
+    let $VIM_STATE = expand($HOME . '/.local/state/vim')
+else
+    let $VIM_STATE = expand($XDG_STATE_HOME . '/vim')
 endif
 
-" Centraliza arquivos temporários (swap/undo/info) em local invisível, mantendo o $HOME totalmente limpo
-set viminfo+=n$VIM_STATE/viminfo
-let &undodir = $VIM_STATE . '/undo//'
-let &directory = $VIM_STATE . '/swap//'
+" Cria automaticamente a árvore de diretórios necessária.
+" Os arquivos nestas pastas podem conter informações pessoais ou sensíveis.
+" Manter as pastas com permissões restritas (0700) aumenta a privacidade.
+if !isdirectory($VIM_STATE . '/backup')
+    call mkdir($VIM_STATE . '/backup', 'p', 0700)
+endif
+if !isdirectory($VIM_STATE . '/swap')
+    call mkdir($VIM_STATE . '/swap', 'p', 0700)
+endif
+if !isdirectory($VIM_STATE . '/undo')
+    call mkdir($VIM_STATE . '/undo', 'p', 0700)
+endif
+
+" Centraliza arquivos temporários, mantendo o $HOME totalmente limpo
+set viminfofile=$VIM_STATE/viminfo
 let &backupdir = $VIM_STATE . '/backup//'
+let &directory = $VIM_STATE . '/swap//'
+let &undodir = $VIM_STATE . '/undo//'
 set undofile
 
 " Garante que o vim sempre salve arquivos no formato utf-8

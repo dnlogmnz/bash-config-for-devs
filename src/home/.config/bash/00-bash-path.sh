@@ -42,16 +42,8 @@ if [[ ":$PATH:" != *":$local_bin:"* ]]; then
     export PATH="$local_bin:$PATH"
 fi
 
-# Validar que instaladores do python (Windows Store) estão desabilitados: vamos usar python gerenciado pelo 'uv'
-for py_exe in "python" "python3"; do
-    py_path=$(which "$py_exe" 2>/dev/null)
-    store_path=$(path2lin "$LOCALAPPDATA/Microsoft/WindowsApps/$py_exe")
-    
-    if [[ "$py_path" == "$store_path" ]]; then
-        displayFailure "Windows" "Config > Aliases de execução: desabilitar '$py_exe'"
-    fi
-done
-
+# Liberar variáveis de ambiente
+unset -f ensure_junction
 
 #--------------------------------------------------------------------------------
 #--- Final do script ~/.config/bash-path.sh

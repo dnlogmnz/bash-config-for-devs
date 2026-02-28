@@ -29,18 +29,22 @@ git-info() {
 # Função para configurar Git globalmente
 #-------------------------------------------------------------------------------------------
 git-config() {
-    echo "Configurando Git..."
-    read -p "Nome completo: " name
-    read -p "Email: " email
+    echo "=== Configurando Git ==="
+    read -p "  Nome completo .........: " name
+    read -p "  Endereço de email .....: " email
 
-    git config --global user.name "$name"
-    git config --global user.email "$email"
-    git config --global core.autocrlf false
-    git config --global core.eol lf
-    git config --global gui.encoding utf-8
-    git config --global http.sslbackend schannel
+    git config set --global user.name "$name"
+    git config set --global user.email "$email"
+    git config set --global core.autocrlf "false"
+    git config set --global core.eol "lf"
+    git config set --global gui.encoding "utf-8"
+    git config set --global http.sslbackend "schannel"
+    git config set --global i18n.commitencoding "utf-8"
+    git config set --global i18n.logoutputencoding "utf-8"
 
     echo "Git configurado com sucesso!"
+
+    echo
     git-info
 }
 
@@ -50,19 +54,19 @@ git-config() {
 #-------------------------------------------------------------------------------------------
 git-merge-tests() {
     if ! git rev-parse --git-dir &>/dev/null; then
-        echo "Não é um repositório Git"
+        echo "Este diretório não é um repositório Git"
         return 1
     fi
 
     # Recebe parâmetros na chamada da função
     BRANCH_FROM="staging"
-    BRANCH_INTO="master"
+    BRANCH_INTO="main"
 
     # Buscar todas atualizações de todos os branches ativos no remoto
     git fetch --all --prune
     
     # Opcional: faz um checkout das 3 branches onde rodam pipelines de CI/CD
-    echodo git checkout master
+    echodo git checkout main
     git pull
     echodo git checkout staging
     git pull
@@ -88,7 +92,7 @@ git-merge-tests() {
 #-------------------------------------------------------------------------------------------
 git-branch() {
     if ! git rev-parse --git-dir &>/dev/null; then
-        echo "Não é um repositório Git"
+        echo "Este diretório não é um repositório Git"
         return 1
     fi
 
