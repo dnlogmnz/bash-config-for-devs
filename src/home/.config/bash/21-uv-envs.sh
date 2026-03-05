@@ -3,6 +3,9 @@
 # Variaveis de ambiente para o UV (Python Package Manager)
 # ==========================================================================================
 
+# Extra: versão mínima de Python a ser usada pelo "uv add"
+export UV_PYTHON_MIN_VER="3.14"
+
 # Diretórios e arquivos do Python grenciado pelo UV
 export UV_PYTHON_INSTALL_DIR="${APPS_BASE}/Python"       # diretóro contendo as diferentes versões do Python
 export UV_PYTHON_BIN_DIR="${UV_PYTHON_INSTALL_DIR}/bin"  # shims do Python: links para os executáveis do Python

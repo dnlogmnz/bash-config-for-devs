@@ -19,11 +19,11 @@ _utils_get_git_user() {
 
 # Helper para validação básica de entrada
 _utils_validate_args() {
-    if [ $# -eq 0 ]; then
-        echo "Uso: ${FUNCNAME[1]} <nome-do-projeto> [<versao-python>]"
-        return 1
-    fi
-    return 0
+  if [ $# -eq 0 ]; then
+    displayWarning "Uso" "${FUNCNAME[1]} <nome-do-projeto> [<versao-python>]"
+    return 1
+  fi
+  return 0
 }
 
 #-------------------------------------------------------------------------------------------
@@ -32,18 +32,14 @@ _utils_validate_args() {
 
 # Helper para criar o .env padrão
 _gen_dot_env() {
-    echo "  + .env (Template de variáveis de ambiente)" 
+    displayInfo "Arquivo .env:" "Template de variáveis de ambiente"
     [ -r .env ] || cat > .env << EOF
 # Este arquivo possui secrets, manter sempre no .gitignore para que não seja enviado ao repositório
 
-# secrets:  
+# secrets:
 # API_KEY="xxx"
 
 #configmap:
-
-# Tech Store - tokens de autenticação
-JKS_URL="https://sso-interno.authcorp.dev.awsporto/auth/realms/addev/protocol/openid-connect/certs"
-TOKEN_URL="https://sso-interno.authcorp.dev.awsporto/auth/realms/addev/protocol/openid-connect/token"
 
 # Biblioteca 'logger' - definir o nível de detalhe nos logs
 LOG_LEVEL="INFO"
@@ -61,8 +57,8 @@ _gen_pyproject_toml() {
     local author_name=$(_utils_get_git_user "name")
     local author_email=$(_utils_get_git_user "email")
 
-    echo "  + pyproject.toml (Modo: $build_mode)"
-    
+    displayInfo "Arquivo pyproject.toml" "Modo '$build_mode'"
+
     # Cabeçalho comum
     cat > pyproject.toml << EOF
 [project]
@@ -93,7 +89,8 @@ _gen_ruff_toml() {
     local python_version="$1"
     local line_length="120"
 
-    echo "  + ruff.toml (Linter & Formatter)"
+    displayInfo "Arquivo ruff.toml" "Linter & Formatter"
+
     cat > ruff.toml << EOF
 # Configurações globais
 line-length = $line_length
@@ -174,7 +171,9 @@ EOF
 
 # Helper específico para criar a estrutura de pastas da PoC
 _gen_poc_envs_folder() {
-    echo "  + Estrutura de ambientes (./envs/)"
+    # Usando displayInfo para manter o alinhamento com a geração de outros arquivos/pastas
+    displayInfo "Diretório" "./envs/ (Estrutura de ambientes)"
+
     mkdir -p envs
     for product in prod-a prod-b prod-c; do
         cat > "./envs/${product}.sh" << EOF
@@ -195,12 +194,12 @@ EOF
 # Recebe: $1=project_name, $2=python_version, $3=build_mode
 _setup_common_env() {
     local project_name="$1"
-    local python_version="$2"
+    local python_version="${2:-$UV_PYTHON_MIN_VER}"
     local build_mode="$3"
 
     echo ""
-    echo ">>> Configurando padronização..."
-    
+    displayAction "Configurando padronização..."
+
     # 1. Ajustar pyproject.toml gerado pelo "uv init"
     _gen_pyproject_toml "$project_name" "$python_version" "$build_mode"
 
@@ -210,7 +209,7 @@ _setup_common_env() {
 
     # 3. Instalar dependências de desenvolvimento universais
     echo ""
-    echo ">>> Instalando ferramentas de Dev (Ruff, Mypy, Pytest)..."
+    displayAction "Instalando ferramentas de Dev (Ruff, Mypy, Pytest)..."
     uv add --dev ruff mypy pytest pytest-asyncio pytest-cov
 }
 
@@ -219,13 +218,15 @@ _setup_common_env() {
 #-------------------------------------------------------------------------------------------
 
 uv-info() {
-    echo "=== Informações do UV ==="
-    echo "  Versão: $(uv --version 2>/dev/null || echo 'Não encontrado')"
-    echo "  Python: ${UV_PYTHON_INSTALL_DIR:-not set}"
-    echo "  Cache : $UV_CACHE_DIR"
     echo ""
-    echo "=== Python Instalado ==="
-    uv python list --only-installed 2>/dev/null
+    displayAction "Informações do UV"
+    displayInfo "Versão" "$(uv --version 2>/dev/null || echo 'Não encontrado')"
+    displayInfo "Python" "${UV_PYTHON_INSTALL_DIR:-Não configurado}"
+    displayInfo "Cache" "${UV_CACHE_DIR:-Não configurado}"
+
+    echo ""
+    displayAction "Informações do Python"
+    uv python list --only-installed 2>/dev/null || displayWarning "Aviso" "Nenhuma versão instalada"
 }
 
 # 1. Criação de PoC (Proof of Concept)
@@ -233,10 +234,12 @@ uv-info() {
 uv-new-poc() {
     _utils_validate_args "$@" || return 1
     local project_name="$1"
-    local python_version="${2:-$UV_PYTHON}"
+    local python_version="${2:-$UV_PYTHON_MIN_VER}"
+    displayTitle "python version" "$python_version"
+    displayTitle "python min version" "$UV_PYTHON_MIN_VER"
 
-    echo ">>> Iniciando PoC: $project_name (Python $python_version)"
-    
+    displayAction "Iniciando PoC: $project_name (Python $python_version)"
+
     # Inicializa estrutura plana
     uv init --app --python "$python_version" "$project_name"
     cd "$project_name" || return
@@ -245,46 +248,52 @@ uv-new-poc() {
     _setup_common_env "$project_name" "$python_version" "simple"
 
     # Dependências específicas de PoC
-    echo ">>> Instalando libs de Runtime (Httpx, Pydantic-Settings)..."
+    echo ""
+    displayAction "Instalando libs de Runtime (Httpx, Pydantic-Settings)..."
     uv add httpx pydantic-settings
 
     # Cria pasta de envs
     _gen_poc_envs_folder
 
     echo ""
-    echo ">>> PoC criada com sucesso!"
+    displaySuccess "Concluído" "PoC criada com sucesso!"
+
+    echo ""
+    displayAction "A seguir" "Acesse a pasta e rode o projeto:"
     echo "   cd $project_name && uv run main.py"
 }
 
 # 2. Criação de Aplicação Simples (Scripts/Notebooks)
 # Foco: Estrutura simples (--app), uso geral.
 uv-new-app() {
-    _utils_validate_args "$@" || return 1
-    local project_name="$1"
-    local python_version="${2:-$UV_PYTHON}"
+  _utils_validate_args "$@" || return 1
+  local project_name="$1"
+  local python_version="${2:-$UV_PYTHON_MIN_VER}"
 
-    echo ">>> Iniciando App Simples: $project_name"
-    
-    # Inicializa estrutura plana
-    uv init --app --python "$python_version" "$project_name"
-    cd "$project_name" || return
+  displayAction "Iniciando Backend/App Estruturada: $project_name"
 
-    # Configura base (Modo simple)
-    _setup_common_env "$project_name" "$python_version" "simple"
+  # Inicializa como aplicação empacotada (src layout + app)
+  uv init --app --package --python "$python_version" "$project_name"
+  cd "$project_name" || return
 
-    echo ""
-    echo ">>> App criada com sucesso!"
+  # Configura base (Modo package = com build system hatchling)
+  _setup_common_env "$project_name" "$python_version" "package"
+
+  echo ""
+  displaySuccess "Concluído" "Backend inicializado em ./src/$project_name!"
 }
+
 
 # 3. Criação de Backend Profissional (API/CLI)
 # Foco: Estrutura src/ (--app --package), build system configurado, pronto para crescer.
+
 uv-new-backend() {
     _utils_validate_args "$@" || return 1
     local project_name="$1"
-    local python_version="${2:-$UV_PYTHON}"
+    local python_version="${2:-$UV_PYTHON_MIN_VER}"
 
-    echo ">>> Iniciando Backend/App Estruturada: $project_name"
-    
+    displayAction "Iniciando Backend/App Estruturada: $project_name"
+
     # Inicializa como aplicação empacotada (src layout + app)
     uv init --app --package --python "$python_version" "$project_name"
     cd "$project_name" || return
@@ -296,27 +305,28 @@ uv-new-backend() {
     # (Poderíamos adicionar fastapi uvicorn aqui se fosse um template específico)
 
     echo ""
-    echo ">>> Backend inicializado em ./src/$project_name!"
+    displaySuccess "Concluído" "Backend inicializado em ./src/$project_name!"
 }
+
 
 # 4. Criação de Biblioteca (Library)
 # Foco: Estrutura src/ (--lib), preparada para distribuição (PyPI).
 uv-new-lib() {
-    _utils_validate_args "$@" || return 1
-    local project_name="$1"
-    local python_version="${2:-$UV_PYTHON}"
+  _utils_validate_args "$@" || return 1
+  local project_name="$1"
+  local python_version="${2:-$UV_PYTHON_MIN_VER}"
 
-    echo ">>> Iniciando Biblioteca Reutilizável: $project_name"
-    
-    # Inicializa como biblioteca
-    uv init --lib --python "$python_version" "$project_name"
-    cd "$project_name" || return
+  displayAction "Iniciando Biblioteca Reutilizável: $project_name"
 
-    # Configura base (Modo package)
-    _setup_common_env "$project_name" "$python_version" "package"
+  # Inicializa como biblioteca
+  uv init --lib --python "$python_version" "$project_name"
+  cd "$project_name" || return
 
-    echo ""
-    echo ">>> Biblioteca criada com estrutura src/!"
+  # Configura base (Modo package)
+  _setup_common_env "$project_name" "$python_version" "package"
+
+  echo ""
+  displaySuccess "Concluído" "Biblioteca criada com estrutura src/!"
 }
 
 # Mantida para compatibilidade (alias para uv-new-app)
