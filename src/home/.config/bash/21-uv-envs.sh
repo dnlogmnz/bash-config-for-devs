@@ -24,12 +24,12 @@ export UV_PYTHON_DOWNLOADS="manual"            # desabilitar os downloads automÃ
 export UV_NATIVE_TLS="1"                       # usar os certificados do Windows (SChannel)
 
 # Habilitar o autocompletion para comandos uv e uvx
-# if [ -r "${UV_INSTALL_DIR}/uv" ]; then
-#     echo 'eval "$(uv generate-shell-completion bash)"' 1> /tmp/uv-autocompletion.sh 2>/dev/null
-#     echo 'eval "$(uvx --generate-shell-completion bash)"' 1>> /tmp/uv-autocompletion.sh 2>/dev/null
-#     source /tmp/uv-autocompletion.sh
-#     rm -f /tmp/uv-autocompletion.sh
-# fi
+if [ -r "${UV_INSTALL_DIR}/uv" ]; then
+    echo 'eval "$(uv generate-shell-completion bash)"' 1> /tmp/uv-autocompletion.sh 2>/dev/null
+    echo 'eval "$(uvx --generate-shell-completion bash)"' 1>> /tmp/uv-autocompletion.sh 2>/dev/null
+    source /tmp/uv-autocompletion.sh
+    rm -f /tmp/uv-autocompletion.sh
+fi
 
 #-------------------------------------------------------------------------------------------
 #--- Final do script uv-envs.sh

@@ -329,6 +329,7 @@ uv-new-lib() {
   displaySuccess "Concluído" "Biblioteca criada com estrutura src/!"
 }
 
+
 # Mantida para compatibilidade (alias para uv-new-app)
 uv-new-project() {
     uv-new-app "$@"

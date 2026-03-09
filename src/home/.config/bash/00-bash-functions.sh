@@ -55,7 +55,6 @@ urldecode() {
     printf '%b' "${url_encoded//%/\\x}"
 }
 
-
 #-------------------------------------------------------------------------------------------
 # Funções para exibir mensagens
 #-------------------------------------------------------------------------------------------
@@ -78,6 +77,14 @@ displaySuccess() { printf '%s[%s]%s %s\n'     "${colorReset}${colorSuccess}" "$1
 displayFailure() { printf '%s[%s]%s %s\n'     "${colorReset}${colorFailure}" "$1" "${colorReset}" "$2"; }
 displayWarning() { printf '%s[%s]%s %s\n'     "${colorReset}${colorWarning}" "$1" "${colorReset}" "$2"; }
 
+# Garantir que as funções de display de mensagens estejam disponívels para sub-shells
+export -f displayTitle
+export -f displayAction  
+export -f displayScript  
+export -f displayInfo    
+export -f displaySuccess 
+export -f displayFailure 
+export -f displayWarning 
 
 #-------------------------------------------------------------------------------------------
 # Função para mostrar informações do ambiente
