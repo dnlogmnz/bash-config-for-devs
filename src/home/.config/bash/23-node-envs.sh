@@ -2,7 +2,7 @@
 # Script: ~/.config/bash/node-envs.sh
 # Variáveis de ambiente para o Node.js
 # Dica: Algumas variáveis não são "oficiais", ou seja, não são parte da documentação
-#        do Node.js e NPM, mas são usadas aqui seguindo práticas comuns da comunidade.
+#       do Node.js e NPM, mas são usadas aqui seguindo práticas comuns da comunidade.
 # ==========================================================================================
 
 # Variáveis não oficiais para definir diretório onde estarão as versões do Node.js

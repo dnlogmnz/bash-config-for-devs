@@ -9,9 +9,6 @@ mkdir -p "$NODE_HOME" \
          "$(dirname "$NODE_REPL_HISTORY")" \
          "$(dirname "$NPM_CONFIG_USERCONFIG")"
 
-# Continuação do comando acima
-#         "$NPM_CONFIG_PREFIX" \
-
 # Adicionar Node.js ao PATH
 if [[ ":$PATH:" != *":$NODE_CURRENT:"* ]]; then
     displayFailure "Windows" "Variáveis de ambiente para sua conta: adicionar \"$(path2win "$NODE_CURRENT")\" ao PATH"

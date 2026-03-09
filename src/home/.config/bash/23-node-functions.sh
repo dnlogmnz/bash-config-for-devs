@@ -1,27 +1,35 @@
 #
 # Script: ~/.config/bash/node-functions.sh
 # Funções para gerenciar versões do Node.js (substituto leve do nvm)
-# Depende de funções e variáveis definidas em:
-#   - bash-functions.sh  (displayAction, displayInfo, displaySuccess, displayFailure, displayWarning, path2win)
-#   - node-envs.sh       (NODE_HOME, NODE_CURRENT)
 # ==========================================================================================
 
 
 #-------------------------------------------------------------------------------------------
 # HELPER: Resolve qual versão está ativa via junction "current"
 #-------------------------------------------------------------------------------------------
-_node_current_version() {
+_get_node_current_version() {
     # No Git Bash, junctions criadas com mklink /J aparecem como symlinks para o readlink.
     if [ -L "$NODE_CURRENT" ]; then
         basename "$(readlink "$NODE_CURRENT")"   # retorna ex: "v22.14.0"
     elif [ -d "$NODE_CURRENT" ]; then
         # Junction criada externamente: pergunta ao próprio executável
-        node --version 2>/dev/null || echo ""
+        node.exe --version 2>/dev/null || echo ""
     else
         echo ""
     fi
 }
 
+#-------------------------------------------------------------------------------------------
+# HELPER: Apresenta informações sobre a versão default do Node.js
+#-------------------------------------------------------------------------------------------
+_node_current_version() {
+    displayAction "Informações sobre a versão default para o ambiente"
+    local current_version
+    current_version=$(_get_node_current_version)
+    displayInfo "Versão ativa" "${current_version:-Nenhuma (junction inexistente ou inválida)}"
+    displayInfo "node --version" "$(node.exe --version 2>/dev/null || echo 'Não encontrado no PATH')"
+    displayInfo "npm --version"  "$(npm.cmd --version  2>/dev/null || echo 'Não encontrado no PATH')"
+}
 
 #-------------------------------------------------------------------------------------------
 # HELPER: Cria ou recria a junction $NODE_CURRENT → $node_dir via cmd.exe
@@ -31,35 +39,30 @@ _node_current_version() {
 # A saída do cmd.exe é convertida de CP850 → UTF-8 para evitar caracteres quebrados.
 #-------------------------------------------------------------------------------------------
 _node_set_junction() {
-    local node_dir="$1"
-    local output exit_code
+    local new_current_dir="$1"
 
     # Converter caminhos para formato Windows (necessário para mklink /J)
     local win_current win_target
     win_current=$(path2win "$NODE_CURRENT")
-    win_target=$(path2win "$NODE_HOME/$node_dir")
+    win_target=$(path2win "$new_current_dir")
 
-    # Remover junction existente.
-    # rmdir /S /Q remove a junction sem apagar o conteúdo do diretório-alvo.
+    # Remover junction existente
     if [ -e "$NODE_CURRENT" ] || [ -L "$NODE_CURRENT" ]; then
-        displayScript "Removendo junction anterior"
-        cmd.exe //c "rmdir //S //Q \"$win_target\""
-        echo ""
+        displayInfo "Remover configuração atual" "$NODE_CURRENT"
+        rm "$NODE_CURRENT" || exit 1
     fi
 
-    # Criar nova junction passando os caminhos via variáveis de ambiente,
-    # evitando qualquer problema de quoting entre o Git Bash e o cmd.exe.
-    displayScript "Criando junction"
-    output=$(cmd //c "mklink /J \"$win_current\" \"$win_target\"" 2>&1)
+    # Criar nova junction
+    displayInfo "Configurar nova versão padrão" "$new_current_dir"
+    cmd.exe //c "mklink /J $win_current $win_target" 1>/dev/null 2>&1
     exit_code=$?
-    echo ""
 
     if [ $exit_code -eq 0 ]; then
-        displaySuccess "Junction" "$output"
+        displaySuccess "Sucesso" "Junction criada: $NODE_CURRENT → $node_dir"
         return 0
     else
         displayFailure "Erro" "mklink falhou: $output"
-        displayInfo   "Dica" "Verifique se o terminal tem acesso ao cmd.exe e se os caminhos existem"
+        displayWarning "Dica" "Verifique se o terminal tem acesso ao cmd.exe e se os caminhos existem"
         return 1
     fi
 }
@@ -76,7 +79,7 @@ node-list() {
     fi
 
     local current_version
-    current_version=$(_node_current_version)
+    current_version=$(_get_node_current_version)
 
     local versions
     versions=$(ls -1p "$NODE_HOME" | grep "^v[0-9].*/$" | tr -d '/' 2>/dev/null)
@@ -174,9 +177,8 @@ node-install() {
 node-default() {
     # Sem argumentos: exibir ajuda e versões disponíveis
     if [ -z "$1" ]; then
-        displayAction "Definir qual será a versão default do Node.js"
+        displayAction "Nenhum argumento recebido na linha de comandos"
         displayInfo   "Sintaxe"  "node-default <versão>"
-        echo ""
         displayInfo   "Exemplos" ""
         displayInfo   "  node-default 22.14.0" "usa exatamente v22.14.0"
         displayInfo   "  node-default 22"      "a v22.x.x mais recente instalada"
@@ -186,31 +188,33 @@ node-default() {
         return 0
     fi
 
+    displayAction "Encontrar diretório contendo a versão solicitada"
+    
     # Normalizar entrada: aceitar "22.14.0", "v22.14.0", "22", "20.18" etc.
-    local input="${1#v}"    # remove prefixo "v" se houver
+    local target_version="${1#v}"    # remove prefixo "v" se houver
 
     # Resolver o diretório instalado que melhor corresponde ao prefixo informado
     local matched_dir
-    matched_dir=$(ls -1 "$NODE_HOME" | grep "^v[0-9]" | grep "^v${input}" | sort -V | tail -1)
+    matched_dir=$(/bin/ls -1 "$NODE_HOME" | grep "^v[0-9]" | grep "^v${target_version}" | sort -V | tail -1)
 
     if [ -z "$matched_dir" ]; then
-        displayFailure "Erro" "Nenhuma versão instalada corresponde a: v${input}"
-        displayInfo   "Dica" "Use node-list para ver as versões disponíveis"
-        displayInfo   "Dica" "Use node-install <versão> para baixar uma nova versão"
+        displayFailure "Erro" "Nenhuma versão instalada corresponde a: v${target_version}"
+        displayInfo    "Dica" "Use 'node-install <versão>' para baixar uma nova versão"
+        echo ""
+        node-list
         return 1
     fi
 
+    displayInfo "Matched dir" "$matched_dir"
     local node_dir="${NODE_HOME}/${matched_dir}"
-
-    displayAction "Definindo Node.js padrão: $matched_dir"
-    displayInfo   "Alvo" "$node_dir"
+    displayInfo "Node dir" "$node_dir"
+    
     echo ""
-
+    displayAction "Definir '$matched_dir' como versão padrão"
     _node_set_junction "$node_dir" || return 1
 
     echo ""
-    displayInfo "node" "$(node --version 2>/dev/null || echo 'reinicie o terminal para atualizar o PATH')"
-    displayInfo "npm"  "$(npm --version  2>/dev/null || echo 'reinicie o terminal para atualizar o PATH')"
+    _node_current_version
 }
 
 
@@ -219,18 +223,14 @@ node-default() {
 #-------------------------------------------------------------------------------------------
 node-info() {
     echo ""
-    displayAction "Ambiente Node.js"
-    displayInfo "NODE_HOME"    "${NODE_HOME:-Não configurado}"
-    displayInfo "NODE_CURRENT" "${NODE_CURRENT:-Não configurado}"
+    displayAction "Variáveis de ambiente para Node.js"
+    displayInfo "NODE_HOME"        "${NODE_HOME:-Não configurado}"
+    displayInfo "NODE_CURRENT"     "${NODE_CURRENT:-Não configurado}"
+    displayInfo "NPM_CONFIG_CACHE" "${NPM_CONFIG_CACHE:-Não configurado}"
 
-    local current_version
-    current_version=$(_node_current_version)
-    displayInfo "Versão ativa" "${current_version:-Nenhuma (junction inexistente ou inválida)}"
-
-    displayInfo "node"      "$(node --version 2>/dev/null || echo 'Não encontrado no PATH')"
-    displayInfo "npm"       "$(npm --version  2>/dev/null || echo 'Não encontrado no PATH')"
-    displayInfo "NPM cache" "${NPM_CONFIG_CACHE:-Não configurado}"
-
+    echo ""
+    _node_current_version
+    
     echo ""
     node-list
 }
