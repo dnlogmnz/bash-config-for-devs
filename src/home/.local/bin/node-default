@@ -1,0 +1,77 @@
+#!/bin/bash
+#
+# Comando: node-default
+# Descrição: Define a versão padrão do Node.js recriando a junction $NODE_HOME/current
+# Uso: node-default [versão]
+# ==========================================================================================
+
+# Source das funções de display
+if [ -f "${HOME}/.config/bash/00-display-functions.sh" ]; then
+    source "${HOME}/.config/bash/00-display-functions.sh"
+else
+    displayAction()  { echo ">>> $*"; }
+    displayInfo()    { echo "  - $1: ${2:+$2}"; }
+    displaySuccess() { echo "[SUCCESS] $*"; }
+    displayFailure() { echo "[FAILURE] $*"; }
+    displayWarning() { echo "[WARNING] $*"; }
+fi
+
+# Source dos helpers
+if [ -f "${HOME}/.local/bin/helpers/node-version.sh" ]; then
+    source "${HOME}/.local/bin/helpers/node-version.sh"
+fi
+
+if [ -f "${HOME}/.local/bin/helpers/node-current.sh" ]; then
+    source "${HOME}/.local/bin/helpers/node-current.sh"
+fi
+
+if [ -f "${HOME}/.local/bin/helpers/node-junction.sh" ]; then
+    source "${HOME}/.local/bin/helpers/node-junction.sh"
+fi
+
+# Sem argumentos: exibir ajuda e versões disponíveis
+if [ -z "$1" ]; then
+    displayAction "Nenhum argumento recebido na linha de comandos"
+    displayInfo   "Sintaxe"  "node-default <versão>"
+    displayInfo   "Exemplos" ""
+    displayInfo   "  node-default 22.14.0" "usa exatamente v22.14.0"
+    displayInfo   "  node-default v22"     "normaliza para v22.0.0 e escolhe v22.x.x mais recente"
+    displayInfo   "  node-default 22"      "mesma coisa sem prefixo"
+    displayInfo   "  node-default 20.18"   "usa a v20.18.x mais recente instalada"
+    echo ""
+    node-list
+    exit 0
+fi
+
+displayAction "Encontrar diretório contendo a versão solicitada"
+
+# Preparar versão normalizada e prefixo para busca
+raw="${1}"
+normalized=$(_node_normalize_version "$raw")          # vXX.YY.zz
+prefix=$(_node_version_prefix "$raw")                 # remove ".0" desnecessários
+
+# Resolver o diretório instalado que melhor corresponde ao prefixo informado
+matched_dir=$(_node_list_versions | grep "^${prefix}" | tail -1)
+
+if [ -z "$matched_dir" ]; then
+    displayFailure "Erro" "Nenhuma versão instalada corresponde a: ${prefix}"
+    displayInfo    "Dica" "Use 'node-install <versão>' para baixar uma nova versão"
+    echo ""
+    node-list
+    exit 1
+fi
+
+displayInfo "Matched dir" "$matched_dir"
+node_dir="${NODE_HOME}/${matched_dir}"
+displayInfo "Node dir" "$node_dir"
+
+echo ""
+displayAction "Definir '$matched_dir' como versão padrão"
+_node_set_junction "$node_dir" || exit 1
+
+echo ""
+_node_current_version
+
+#-------------------------------------------------------------------------------------------
+#--- Final do script node-default
+#-------------------------------------------------------------------------------------------

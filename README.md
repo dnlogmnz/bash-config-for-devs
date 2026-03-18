@@ -81,7 +81,7 @@ Os scripts terminados em `-envs.sh` configuram variáveis de sistema, caminhos d
 
 Os scripts terminados em `-functions.sh` declaram funções complexas para automação de tarefas.
 
-*   **00-bash-functions.sh**: Funções de exibição de mensagens e visualização de versões (DevSecOps stack).
+*   **00-display-functions.sh**: Funções de exibição de mensagens e visualização de versões (DevSecOps stack).
 *   **11-git-functions.sh**: Utilitários para Git CLI, como `git-info` e `git-config`.
 *   **21-aws-functions.sh**: Facilita o uso do AWS CLI (`aws-info`, `aws-use`, `aws-setup`).
 *   **31-mongodb-functions.sh**: Interação com MongoDB Atlas CLI.

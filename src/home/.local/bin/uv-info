@@ -1,0 +1,29 @@
+#!/bin/bash
+#
+# Comando: uv-info
+# Descrição: Exibe informações do UV e das versões de Python instaladas
+# Uso: uv-info
+# ==========================================================================================
+
+# Source das funções de display
+if [ -f "${HOME}/.config/bash/00-display-functions.sh" ]; then
+    source "${HOME}/.config/bash/00-display-functions.sh"
+else
+    displayAction()  { echo ">>> $*"; }
+    displayInfo()    { echo "  - $1: ${2:+$2}"; }
+    displayWarning() { echo "[WARNING] $*"; }
+fi
+
+echo ""
+displayAction "Informações do UV"
+displayInfo "Versão" "$(uv --version 2>/dev/null || echo 'Não encontrado')"
+displayInfo "Python" "${UV_PYTHON_INSTALL_DIR:-Não configurado}"
+displayInfo "Cache" "${UV_CACHE_DIR:-Não configurado}"
+
+echo ""
+displayAction "Informações do Python"
+uv python list --only-installed 2>/dev/null || displayWarning "Aviso" "Nenhuma versão instalada"
+
+#-------------------------------------------------------------------------------------------
+#--- Final do script uv-info
+#-------------------------------------------------------------------------------------------

@@ -1,0 +1,43 @@
+#!/bin/bash
+#
+# Comando: node-info
+# Descrição: Exibe informações gerais do ambiente Node.js e NPM
+# Uso: node-info
+# ==========================================================================================
+
+# Source das funções de display
+if [ -f "${HOME}/.config/bash/00-display-functions.sh" ]; then
+    source "${HOME}/.config/bash/00-display-functions.sh"
+else
+    displayAction()  { echo ">>> $*"; }
+    displayInfo()    { echo "  - $1: ${2:+$2}"; }
+    displayWarning() { echo "[WARNING] $*"; }
+fi
+
+# Source dos helpers
+if [ -f "${HOME}/.local/bin/helpers/node-current.sh" ]; then
+    source "${HOME}/.local/bin/helpers/node-current.sh"
+fi
+
+echo ""
+displayAction "Variáveis de ambiente para Node.js"
+displayInfo "NODE_HOME"               "${NODE_HOME:-Não configurado}"
+displayInfo "NODE_CURRENT"            "${NODE_CURRENT:-Não configurado}"
+
+echo ""
+displayAction "Variáveis de ambiente para NPM"
+displayInfo "NPM_CONFIG_CACHE"        "${NPM_CONFIG_CACHE:-Não configurado}"
+displayInfo "NPM_CONFIG_TMP"          "${NPM_CONFIG_TMP:-Não configurado}"
+displayInfo "NPM_CONFIG_LOGS_DIR"     "${NPM_CONFIG_LOGS_DIR:-Não configurado}"
+displayInfo "NPM_CONFIG_PREFIX"       "${NPM_CONFIG_PREFIX:-Não configurado} (isolado por versão)"
+displayInfo "NPM_CONFIG_USERCONFIG"   "${NPM_CONFIG_USERCONFIG:-Não configurado}"
+
+echo ""
+_node_current_version
+
+echo ""
+node-list
+
+#-------------------------------------------------------------------------------------------
+#--- Final do script node-info
+#-------------------------------------------------------------------------------------------

@@ -1,0 +1,11 @@
+# Este arquivo possui secrets, manter sempre no .gitignore para que não seja enviado ao repositório
+
+# secrets:
+# API_KEY="xxx"
+
+#configmap:
+
+# Biblioteca 'logger' - definir o nível de detalhe nos logs
+LOG_LEVEL="INFO"
+
+GLOBAL_TIMEOUT="30"

@@ -1,0 +1,51 @@
+#!/bin/bash
+#
+# Comando: node-list
+# Descrição: Lista as versões do Node.js instaladas em $NODE_HOME
+# Uso: node-list
+# ==========================================================================================
+
+# Source das funções de display
+if [ -f "${HOME}/.config/bash/00-display-functions.sh" ]; then
+    source "${HOME}/.config/bash/00-display-functions.sh"
+else
+    displayAction()  { echo ">>> $*"; }
+    displayInfo()    { echo "  - $1: ${2:+$2}"; }
+    displayWarning() { echo "[WARNING] $*"; }
+fi
+
+# Source dos helpers
+if [ -f "${HOME}/.local/bin/helpers/node-version.sh" ]; then
+    source "${HOME}/.local/bin/helpers/node-version.sh"
+fi
+
+if [ -f "${HOME}/.local/bin/helpers/node-current.sh" ]; then
+    source "${HOME}/.local/bin/helpers/node-current.sh"
+fi
+
+if [ ! -d "$NODE_HOME" ]; then
+    displayWarning "Aviso" "Diretório \$NODE_HOME não encontrado: $NODE_HOME"
+    exit 1
+fi
+
+local_current_version=$(_get_node_current_version)
+
+versions=$(_node_list_versions)
+
+if [ -z "$versions" ]; then
+    displayWarning "Aviso" "Nenhuma versão instalada em $NODE_HOME"
+    exit 0
+fi
+
+displayAction "Versões do Node.js instaladas"
+while IFS= read -r ver; do
+    if [ "$ver" = "$local_current_version" ]; then
+        displayInfo "$ver" "$NODE_HOME/$ver/  (*default)"
+    else
+        displayInfo "$ver" "$NODE_HOME/$ver/"
+    fi
+done <<< "$versions"
+
+#-------------------------------------------------------------------------------------------
+#--- Final do script node-list
+#-------------------------------------------------------------------------------------------

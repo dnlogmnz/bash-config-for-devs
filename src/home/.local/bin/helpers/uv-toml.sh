@@ -1,5 +1,6 @@
+#!/bin/bash
 #
-# Script: ~/.config/bash/uv-toml.sh
+# Script: ~/.local/bin/helpers/uv-toml.sh
 # Criar arquivo "uv.toml", caso ainda não existir
 # ==========================================================================================
 
@@ -13,19 +14,18 @@ if [ -d "${UV_HOME}" ]; then
     UV_CACHE_DST="$(echo $UV_CACHE_DIR | sed -e 's,^/d,D:,g' -e 's,/,\\\\,g')"
 
     # Cria um novo arquivo, caso ainda não exitir
-    [ -r "$UV_CONFIG_FILE" ] || cat >"$UV_CONFIG_FILE" << EOF
-#
-# Arquivo: $UV_CONF_FILE
-# Configuração global do UV
-# =============================================================================
+    if [ ! -r "$UV_CONFIG_FILE" ]; then
+        TEMPLATE_FILE="$HOME/.config/templates/uv.toml.template"
+        if [ ! -f "$TEMPLATE_FILE" ]; then
+            displayFailure "Erro" "Template não encontrado: $TEMPLATE_FILE"
+            exit 1
+        fi
 
-# Configurações gerais
-link-mode = "copy"
-python-downloads = "manual"
-
-# Diretórios
-cache-dir = "$UV_CACHE_DST"
-EOF
+        sed \
+            -e "s/{{UV_CONF_FILE}}/$UV_CONF_FILE/g" \
+            -e "s/{{UV_CACHE_DST}}/$UV_CACHE_DST/g" \
+            "$TEMPLATE_FILE" > "$UV_CONFIG_FILE"
+    fi
 
     # Liberar variáveis de ambiente
     unset UV_CONF_FILE UV_CACHE_DST

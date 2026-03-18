@@ -1,0 +1,74 @@
+# Configurações globais
+line-length = {{LINE_LENGTH}}
+target-version = "py{{PYTHON_VERSION}}"
+
+[lint]
+select = [
+    "E",      # pycodestyle errors
+    "F",      # Pyflakes
+    "I",      # isort (ordenação de imports)
+    "N",      # pep8-naming (convenções de nomenclatura)
+    "UP",     # pyupgrade (modernização de código)
+    "B",      # flake8-bugbear (bugs comuns)
+    "C4",     # flake8-comprehensions (otimização de comprehensions)
+    "DTZ",    # flake8-datetimez (uso correto de timezone)
+    "T10",    # flake8-debugger (detecta debugger statements)
+    "EM",     # flake8-errmsg (mensagens de erro consistentes)
+    "ISC",    # flake8-implicit-str-concat (concatenação implícita)
+    "ICN",    # flake8-import-conventions (convenções de import)
+    "PIE",    # flake8-pie (melhorias diversas)
+    "PT",     # flake8-pytest-style (boas práticas pytest)
+    "Q",      # flake8-quotes (consistência de aspas)
+    "RSE",    # flake8-raise (uso correto de raise)
+    "RET",    # flake8-return (otimização de returns)
+    "SIM",    # flake8-simplify (simplificação de código)
+    "TID",    # flake8-tidy-imports (imports organizados)
+    "ARG",    # flake8-unused-arguments (argumentos não utilizados)
+    "PTH",    # flake8-use-pathlib (uso de pathlib)
+    "ERA",    # eradicate (código comentado)
+    "PL",     # Pylint
+    "TRY",    # tryceratops (boas práticas de exceções)
+    "RUF",    # Ruff-specific rules
+]
+
+ignore = [      # Regras ignoradas (com justificativa)
+    "TRY003",   # Permite mensagens longas em exceções (comum em APIs)
+    "PLR0913",  # Permite mais de 5 argumentos em funções (comum em injeção de dependência)
+    "B008",     # Permite function calls em argumentos default (necessário para Depends() do FastAPI)
+]
+
+[lint.per-file-ignores]
+"__init__.py" = [
+    "F401",     # Permite imports não utilizados em __init__.py (comum para re-exportação de símbolos)
+]
+"tests/**/*.py" = [
+    "ARG001",   # Detecta argumentos de função que foram declarados mas nunca utilizados no corpo da função
+    "ARG002"    # Detecta argumentos de método (funções dentro de Classes) que foram declarados mas nunca utilizados
+]
+
+[lint.isort]
+known-first-party = ["{{PROJECT_NAME}}"]
+force-sort-within-sections = true         # Forçar ordenação alfabética dentro de cada seção
+combine-as-imports = true                 # Combinar imports do mesmo módulo
+section-order = [        # Ordem das seções de imports
+    "future",            # Imports de __future__            - p.ex: from __future__ import annotations
+    "standard-library",  # Biblioteca padrão do Python      - p.ex: import os, sys, datetime
+    "third-party",       # Pacotes de terceiros instalados  - p.ex: from fastapi import FastAPI
+    "first-party",       # Módulos do próprio projeto       - p.ex: from {{PROJECT_NAME}}.models import User
+    "local-folder",      # Imports relativos locais         - p.ex: from .utils import helper
+]
+
+[lint.pydocstyle]
+convention = "google"
+
+[lint.pylint]
+max-args = 7  # Ajustado para injeção de dependência
+
+# Configurações de formatação
+[format]
+docstring-code-line-length = {{LINE_LENGTH}}
+quote-style = "double"             # Usa aspas duplas (convenção padrão Python moderna)
+indent-style = "space"             # Usa espaços para indentação (padrão PEP8)
+skip-magic-trailing-comma = false  # Evita remover a vírgula final em listas multilinhas (melhora diffs no git)
+line-ending = "auto"               # Detecta automaticamente se deve usar LF (Linux) ou CRLF (Windows)
+docstring-code-format = true       # Formata exemplos de código dentro de docstrings

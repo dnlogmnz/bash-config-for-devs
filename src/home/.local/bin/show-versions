@@ -1,0 +1,29 @@
+#!/bin/bash
+#
+# Comando: show-versions
+# Descrição: Mostra versões de várias ferramentas (bash, python, node, npm).
+# Uso: show-versions
+# ==========================================================================================
+
+echo ""
+displayAction "Diretório de instalação dos Apps"
+displayInfo "APPS_BASE" "${APPS_BASE:-Não configurado}"
+
+echo ""
+displayAction "Clients dos Cloud Providers"
+displayInfo "AWS CLI" "$(aws --version 2>/dev/null || echo 'Não encontrado')"
+displayInfo "GCloud CLI" "$(gcloud --version 2>/dev/null || echo 'Não encontrado' | head -1)"
+
+echo ""
+displayAction "DevSecOps"
+displayInfo "Docker" "$(docker --version 2>/dev/null || echo 'Não encontrado')"
+displayInfo "Git" "$(git --version 2>/dev/null || echo 'Não encontrado')"
+displayInfo "Terraform" "$(terraform --version 2>/dev/null || echo 'Não encontrado' | head -1)"
+
+echo ""
+displayAction "Linguagens"
+displayInfo "Node.js" "$(node --version 2>/dev/null || echo 'Não encontrado')"
+displayInfo "npm" "$(npm --version 2>/dev/null || echo 'Não encontrado')"
+displayInfo "UV" "$(uv --version 2>/dev/null || echo 'Não encontrado')"
+displayInfo "Python (uv managed)"
+echo "$(uv python list --only-installed 2>/dev/null || echo \"'uv' não encontrado\")"

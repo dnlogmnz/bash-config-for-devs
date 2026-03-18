@@ -1,0 +1,11 @@
+#
+# Arquivo: {{UV_CONF_FILE}}
+# Configuração global do UV
+# =============================================================================
+
+# Configurações gerais
+link-mode = "copy"
+python-downloads = "manual"
+
+# Diretórios
+cache-dir = "{{UV_CACHE_DST}}"

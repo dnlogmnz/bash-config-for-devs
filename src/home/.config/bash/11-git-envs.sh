@@ -1,8 +1,13 @@
 #
 # Script: ~/.config/bash/git-envs.sh
-# Variaveis de ambiente para o Git CLI
+# Aliases e Variaveis de ambiente para o Git CLI
 # Ver: https://git-scm.com/book/en/v2/Git-Internals-Environment-Variables
 # ==========================================================================================
+
+# Aliases para facilitar o uso do Git CLI
+alias git-log="git log --oneline --graph --all"
+alias git-last="git log -1 HEAD"
+alias git-unstage="git reset HEAD --"
 
 # Garante que o "gitconfig" será armazenado em diretório compatível com XDG / FHS
 [ -d "$XDG_CONFIG_HOME" ] && mkdir -p "$XDG_CONFIG_HOME"/git

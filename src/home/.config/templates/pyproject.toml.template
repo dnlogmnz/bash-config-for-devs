@@ -1,0 +1,10 @@
+[project]
+name = "{{PROJECT_NAME}}"
+version = "0.1.0"
+description = "Projeto {{PROJECT_NAME}}"
+readme = "README.md"
+requires-python = ">={{PYTHON_VERSION}}"
+authors = [
+    { name = "{{AUTHOR_NAME}}", email = "{{AUTHOR_EMAIL}}" }
+]
+dependencies = []

@@ -1,0 +1,72 @@
+#!/bin/bash
+#
+# Comando: git-merge-tests
+# Descrição: Atualiza branches de CI/CD e gera relatórios de merge (staging -> main)
+# Uso: git-merge-tests
+# ==========================================================================================
+
+# Source das funções de display
+if [ -f "${HOME}/.config/bash/00-display-functions.sh" ]; then
+    source "${HOME}/.config/bash/00-display-functions.sh"
+else
+    displayAction() { echo ">>> $*"; }
+    displayWarning() { echo "[WARNING] $*"; }
+    displayFailure() { echo "[FAILURE] $*"; }
+    displaySuccess() { echo "[SUCCESS] $*"; }
+    displayInfo() { echo "  - $1: ${2:+$2}"; }
+fi
+
+# Validação inicial
+if ! git rev-parse --git-dir &>/dev/null; then
+    displayFailure "Erro" "Este diretório não é um repositório Git"
+    exit 1
+fi
+
+# Configuração de variáveis
+branch_from="staging"
+branch_into="main"
+report_titles="/tmp/git-merge-titles.$$"
+report_files="/tmp/git-merge-files.$$"
+ci_branches=("main" "staging" "developer")
+
+# 1. Atualização do Remoto
+echo ""
+displayAction "Sincronizando referências remotas..."
+git fetch --all --prune --verbose
+
+# 2. Atualização das Branches de CI/CD
+for branch in "${ci_branches[@]}"; do
+    echo ""
+    displayAction "Atualizando branch: $branch"
+    if git show-ref --verify --quiet "refs/heads/$branch"; then
+        git checkout "$branch" && git pull || displayWarning "Aviso" "Falha ao atualizar $branch"
+    else
+        displayWarning "Pular" "Branch local '$branch' não encontrada"
+    fi
+done
+
+echo ""
+displayAction "Gerando relatórios de comparação ($branch_from -> $branch_into)..."
+
+# 3. Gerar arquivo com títulos dos Merge Requests
+{
+    echo "# Lista de funcionalidades (Títulos dos Merge Requests)"
+    echo "> from \\`${branch_from}\\` into \\`${branch_into}\\`"
+    git log "${branch_into}..${branch_from}" --merges --pretty=format:"- %s"
+} > "$report_titles" 2>/dev/null
+
+# 4. Gerar arquivo com nomes dos arquivos alterados
+{
+    echo "# Lista de arquivos alterados"
+    echo "> from \\`${branch_from}\\` into \\`${branch_into}\\`"
+    git diff "${branch_into}..${branch_from}" --name-only
+} > "$report_files" 2>/dev/null
+
+# 5. Feedback final
+if [ -f "$report_titles" ] && [ -f "$report_files" ]; then
+    displaySuccess "Sucesso" "Relatórios gerados em /tmp/"
+    displayInfo "Log de Merges" "$report_titles"
+    displayInfo "Arquivos Diff" "$report_files"
+else
+    displayFailure "Erro" "Falha ao gerar os arquivos de relatório."
+fi

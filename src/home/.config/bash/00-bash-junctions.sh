@@ -38,7 +38,7 @@ done
 # Adicionar $HOME/.local/bin ao início do PATH
 local_bin="$HOME/.local/bin"
 if [[ ":$PATH:" != *":$local_bin:"* ]]; then
-    displayFailure "Windows" "Variáveis de ambiente para sua conta: adicionar \"$(path2win "$local_bin")\" ao PATH"
+    displayFailure "Windows" "Variáveis de ambiente para sua conta: adicionar \"$(command path2win "$local_bin")\" ao PATH"
     export PATH="$local_bin:$PATH"
 fi
 

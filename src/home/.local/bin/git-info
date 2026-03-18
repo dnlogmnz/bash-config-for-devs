@@ -1,0 +1,49 @@
+#!/bin/bash
+#
+# Comando: git-info
+# Descrição: Exibe informações do Git (versão, configs globais e status do repositório atual)
+# Uso: git-info
+# ==========================================================================================
+
+# Source das funções de display
+if [ -f "${HOME}/.config/bash/00-display-functions.sh" ]; then
+    source "${HOME}/.config/bash/00-display-functions.sh"
+else
+    displayAction() { echo ">>> $*"; }
+    displayInfo() { echo "  - $1: ${2:+$2}"; }
+    displayWarning() { echo "[WARNING] $*"; }
+fi
+
+# Informações gerais do Git
+
+echo ""
+displayAction "Configurações do Git"
+displayInfo "Versão" "$(git --version 2>/dev/null || echo 'Git não encontrado')"
+displayInfo "Executável" "$(which git 2>/dev/null || echo 'Não encontrado')"
+
+echo ""
+displayAction "Configurações Globais do User"
+displayInfo "user.name" "$(git config --global user.name 2>/dev/null || echo 'Não configurado')"
+displayInfo "user.email" "$(git config --global user.email 2>/dev/null || echo 'Não configurado')"
+
+echo ""
+displayAction "Configurações Globais de Comportamento"
+displayInfo "core.autocrlf" "$(git config --global core.autocrlf 2>/dev/null || echo 'Não configurado')"
+displayInfo "core.eol" "$(git config --global core.eol 2>/dev/null || echo 'Não configurado')"
+displayInfo "core.editor" "$(git config --global core.editor 2>/dev/null || echo 'Não configurado')"
+
+echo ""
+displayAction "Configurações Globais de Encoding & Plataforma"
+displayInfo "gui.encoding" "$(git config --global gui.encoding 2>/dev/null || echo 'Não configurado')"
+displayInfo "http.sslbackend" "$(git config --global http.sslbackend 2>/dev/null || echo 'Não configurado')"
+displayInfo "i18n.commitencoding" "$(git config --global i18n.commitencoding 2>/dev/null || echo 'Não configurado')"
+displayInfo "i18n.logoutputencoding" "$(git config --global i18n.logoutputencoding 2>/dev/null || echo 'Não configurado')"
+
+if git rev-parse --git-dir &>/dev/null; then
+  echo ""
+  displayAction "Informações do diretório corrente"
+  displayInfo "Branch corrente" "$(git branch --show-current 2>/dev/null || echo 'Não disponível')"
+  displayInfo "Arquivos modificados" "$(git status --porcelain | wc -l) arquivo(s)"
+  displayInfo "Arquivos em stash" "$(git stash show -p 2>/dev/null | wc -l) arquivo(s)"
+  displayInfo "Remote repository" "$(git remote get-url origin 2>/dev/null || echo 'Não configurado')"
+fi

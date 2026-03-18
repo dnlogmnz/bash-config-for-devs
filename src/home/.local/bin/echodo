@@ -1,0 +1,14 @@
+#!/bin/bash
+#
+# Comando: echodo
+# Descrição: Exibe uma linha e executa o comando passado (como função echodo)
+# Uso: echodo <comando> [args...]
+# ==========================================================================================
+
+# Exibe linha e executa o comando
+printf '%s\n' "${LINHA}" 
+printf '=== %s\n' "$*"
+printf '%s\n' "${LINHA}"
+
+# Executa o comando
+$@

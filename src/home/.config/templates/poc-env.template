@@ -1,0 +1,5 @@
+# Configuração para: {{PRODUCT_NAME}}
+API_BASE_URL="https://api.{{PRODUCT_NAME}}.com"
+API_KEY="insira-aqui-a-api-key"
+PING_RESOURCE="/ping"
+PING_EXPECTED_STATUS="200"

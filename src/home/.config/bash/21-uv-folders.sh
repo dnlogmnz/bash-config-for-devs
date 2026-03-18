@@ -18,14 +18,14 @@ fi
 
 #  Adicionar diretório dos binários UV ao PATH
 if [[ ":$PATH:" != *":${UV_INSTALL_DIR}:"* ]]; then
-    displayFailure "Windows" "Variáveis de ambiente para sua conta: adicionar \"$(path2win "$UV_INSTALL_DIR")\" ao PATH"
+    displayFailure "Windows" "Variáveis de ambiente para sua conta: adicionar \"$(command path2win "$UV_INSTALL_DIR")\" ao PATH"
     export PATH="${UV_INSTALL_DIR}:$PATH"
 fi
 
 #  Adicionar diretório dos binários do Python gerenciado pelo UV ao PATH
 if [ -d "${UV_PYTHON_BIN_DIR}" ]; then
     if [[ ":${PATH}:" != *":${UV_PYTHON_BIN_DIR}:"* ]]; then
-        displayFailure "Windows" "Variáveis de ambiente para sua conta: adicionar \"$(path2win "$UV_PYTHON_BIN_DIR")\" ao PATH"
+        displayFailure "Windows" "Variáveis de ambiente para sua conta: adicionar \"$(command path2win "$UV_PYTHON_BIN_DIR")\" ao PATH"
         export PATH="${UV_PYTHON_BIN_DIR}:$PATH"
     fi
 fi
@@ -33,7 +33,7 @@ fi
 # Validar que instaladores do python (Windows Store) estão desabilitados: vamos usar python gerenciado pelo 'uv'
 for py_exe in "python" "python3"; do
     py_path=$(which "$py_exe" 2>/dev/null)
-    store_path=$(path2lin "$LOCALAPPDATA/Microsoft/WindowsApps/$py_exe")
+    store_path=$(command path2lin "$LOCALAPPDATA/Microsoft/WindowsApps/$py_exe")
 
     if [[ "$py_path" == "$store_path" ]]; then
         displayFailure "Windows" "Config > Aliases de execução: desabilitar '$py_exe'"

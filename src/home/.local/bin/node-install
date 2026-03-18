@@ -1,0 +1,85 @@
+#!/bin/bash
+#
+# Comando: node-install
+# Descrição: Baixa e instala uma versão do Node.js em $NODE_HOME (substituto de nvm install)
+# Uso: node-install <versão>
+# ==========================================================================================
+
+# Source das funções de display
+if [ -f "${HOME}/.config/bash/00-display-functions.sh" ]; then
+    source "${HOME}/.config/bash/00-display-functions.sh"
+else
+    displayAction()  { echo ">>> $*"; }
+    displayInfo()    { echo "  - $1: ${2:+$2}"; }
+    displaySuccess() { echo "[SUCCESS] $*"; }
+    displayFailure() { echo "[FAILURE] $*"; }
+    displayWarning() { echo "[WARNING] $*"; }
+fi
+
+# Source dos helpers
+if [ -f "${HOME}/.local/bin/helpers/node-version.sh" ]; then
+    source "${HOME}/.local/bin/helpers/node-version.sh"
+fi
+
+if [ -z "$1" ]; then
+    displayAction "Nenhum argumento recebido na linha de comandos"
+    displayInfo "Sintaxe"  "node-install <versão>"
+    displayInfo "Exemplo" "node-install 22.14.0"
+    exit 1
+fi
+
+echo ""
+displayAction "Solicitada instalação do Node.js $1..."
+
+# Normalizar versão antes de montar URLs e diretórios
+raw_version="$1"
+version=$(_node_normalize_version "$raw_version")
+displayInfo "versão normalizada" "$version"
+
+pkg_name="node-${version}-win-x64"
+zip_url="https://nodejs.org/dist/${version}/${pkg_name}.zip"
+zip_file="${NODE_HOME}/${pkg_name}.zip"
+node_dir="${NODE_HOME}/${version}"
+
+if [ -d "$node_dir" ]; then
+    displayWarning "Aviso" "Node.js $version já instalado em $node_dir"
+    displayInfo    "Dica"  "Para definir como padrão: node-default $version"
+    exit 0
+fi
+
+# Download
+echo ""
+displayAction "Download Node.js $version..."
+displayInfo   "Origem"  "$zip_url"
+if ! curl -L --progress-bar --fail -o "$zip_file" "$zip_url"; then
+    echo ""
+    displayFailure "Erro" "Falha no download. Verifique se a versão $version existe em nodejs.org/dist"
+    rm -f "$zip_file"
+    exit 1
+fi
+
+# Extração: o ZIP contém internamente a pasta "node-v<versão>-win-x64"
+echo ""
+displayAction "Extraindo ${pkg_name}.zip"
+displayInfo   "Destino" "${NODE_HOME}/${pkg_name}"
+if ! unzip -q "$zip_file" -d "$NODE_HOME"; then
+    echo ""
+    displayFailure "Erro" "Falha na extração do ZIP"
+    rm -f "$zip_file"
+    exit 1
+fi
+
+# Renomear para o formato adotado: vX.Y.Z
+displayInfo "Renomeando diretório" "$version"
+mv "${NODE_HOME}/${pkg_name}" "$node_dir"
+
+# Limpeza do ZIP
+rm -f "$zip_file"
+
+echo ""
+displaySuccess "Sucesso"       "Node.js $version disponível em $node_dir"
+displayInfo    "Próximo passo" "node-default $version"
+
+#-------------------------------------------------------------------------------------------
+#--- Final do script node-install
+#-------------------------------------------------------------------------------------------

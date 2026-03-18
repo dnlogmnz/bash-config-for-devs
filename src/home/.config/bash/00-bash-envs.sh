@@ -1,7 +1,13 @@
 #
 # Script: ~/.config/bash/bash-envs.sh
-# Variáveis de ambiente para o Bash
+# Aliases e variáveis de ambiente para o Git Bash
 # ==========================================================================================
+
+# Aliases para facilitar o uso do Git Bash
+alias ll="/usr/bin/ls -l --color=auto --show-control-chars"
+alias la="/usr/bin/ls -lA --color=auto --show-control-chars"
+alias grep="/usr/bin/grep --color=auto"
+alias npp='/usr/bin/start /d/$USERNAME/Apps/Notepad++/notepad++.exe "$@"'
 
 # Diretório base para aplicações e ferramentas.
 export APPS_BASE="/d/${USERNAME}/Apps"

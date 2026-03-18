@@ -40,17 +40,9 @@ export NPM_CONFIG_USERCONFIG="$XDG_CONFIG_HOME/npm/npmrc"
 # Variáveis oficiais para configurações do Node.js, com valores aderentes ao XDG
 export NODE_REPL_HISTORY="$XDG_STATE_HOME/node_repl_history"
 
-# Cria os diretórios para evitar erros de permissão ou inexistência
-mkdir -p "$NODE_HOME" \
-         "$(dirname "$NODE_REPL_HISTORY")" \
-         "$NPM_CONFIG_CACHE" \
-         "$NPM_CONFIG_TMP" \
-         "$NPM_CONFIG_LOGS_DIR" \
-         "$(dirname "$NPM_CONFIG_USERCONFIG")"
-
 # Adicionar Node.js ao PATH
 if [[ ":$PATH:" != *":$NODE_CURRENT:"* ]]; then
-    displayFailure "Windows" "Variáveis de ambiente para sua conta: adicionar \"$(path2win "$NODE_CURRENT")\" ao PATH"
+    displayFailure "Windows" "Variáveis de ambiente para sua conta: adicionar \"$(command path2win "$NODE_CURRENT")\" ao PATH"
     export PATH="$NODE_CURRENT:$PATH"
 fi
 

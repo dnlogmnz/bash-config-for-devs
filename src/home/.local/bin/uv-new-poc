@@ -1,0 +1,56 @@
+#!/bin/bash
+#
+# Comando: uv-new-poc
+# Descrição: Cria um projeto Proof of Concept com UV (estrutura simples, múltiplos envs)
+# Uso: uv-new-poc <nome-do-projeto> [versao-python]
+# ==========================================================================================
+
+# Source das funções de display
+if [ -f "${HOME}/.config/bash/00-display-functions.sh" ]; then
+    source "${HOME}/.config/bash/00-display-functions.sh"
+else
+    displayAction()  { echo ">>> $*"; }
+    displayInfo()    { echo "  - $1: ${2:+$2}"; }
+    displaySuccess() { echo "[SUCCESS] $*"; }
+    displayFailure() { echo "[FAILURE] $*"; }
+    displayWarning() { echo "[WARNING] $*"; }
+fi
+
+# Source das funções helper
+if [ -f "${HOME}/.local/bin/helpers/uv-utils.sh" ]; then
+    source "${HOME}/.local/bin/helpers/uv-utils.sh"
+fi
+
+_utils_validate_args "$@" || exit 1
+project_name="$1"
+python_version="${2:-$UV_PYTHON_MIN_VER}"
+
+echo ""
+displayAction "Criando Proof of Concept: $project_name"
+displayInfo "Versão Python" "$python_version (mínima configurada: $UV_PYTHON_MIN_VER)"
+
+# Inicializa estrutura plana
+uv init --app --python "$python_version" "$project_name"
+cd "$project_name" || exit 1
+
+# Configura base (Modo simple = sem build system)
+_setup_common_env "$project_name" "$python_version" "simple"
+
+# Dependências específicas de PoC
+echo ""
+displayAction "Instalando libs de Runtime (Httpx, Pydantic-Settings)..."
+uv add httpx pydantic-settings
+
+# Cria pasta de envs
+./helpers/uv-poc-envs.sh
+
+echo ""
+displaySuccess "Concluído" "PoC criada com sucesso!"
+
+echo ""
+displayAction "A seguir" "Acesse a pasta e rode o projeto:"
+echo "   cd $project_name && uv run main.py"
+
+#-------------------------------------------------------------------------------------------
+#--- Final do script uv-new-poc
+#-------------------------------------------------------------------------------------------
