@@ -1,0 +1,46 @@
+# Environments
+.env
+.env.backup
+.envrc
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Temporary files
+*.tmp
+*.log
+*.bak
+*.swp
+~$*
+*~
+
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Editor/IDE
+.idea/
+.vscode/
+
+# Testing
+*.test
+
+# Keystore files
+*.jks
+*.keystore
+
+# Google Services (e.g. APIs or Firebase)
+google-services.json
+
