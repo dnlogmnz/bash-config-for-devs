@@ -11,37 +11,8 @@
         "statusBar.debuggingBackground": "#323232"
     },
 
-    // TELEMETRIA GLOBAL (MICROSOFT): Desativa o rastreio de uso e erros do VS Code
-    "telemetry.telemetryLevel": "off",
-
-    // Desativa rastreio das extensões da Red Hat (YAML, Java, OpenShift)
-    "redhat.telemetry.enabled": false,
- 
-    // Desativa rastreio das extensões de Nuvem (AWS, Azure e Google Cloud)
-    "aws.telemetry": false,
-    "azure.telemetry.enabled": false,
-    "google.cloud.telemetry.enabled": false,
- 
-    // Desativa e avisos iniciais do .NET (C#)
-    "dotnet.help.firstTimeExperience": false,
-
-    // Impede que suas buscas por configurações sejam enviadas para processamento online
-    "workbench.settings.enableNaturalLanguageSearch": false,
-
-    // Remove "Dicas" e sugestões de extensões (ex: "Você quer instalar a extensão X?")
-    "workbench.tips.enabled": false,
-    "extensions.ignoreRecommendations": true,
-
-    // Impede a abertura automática da aba de novidades após atualizações
-    "update.showReleaseNotes": false
-
-    // Controla acesso à galeria pública de servidores MCP no GitHub Copilot Chat
-    "chat.mcp.gallery.enabled": true,
-
-    // Definições para python
-    "python.defaultInterpreterPath": "D:\\${env:USERNAME}\\Apps\\Python\\bin\\python.exe",
- 
     // Definições do terminal integrado
+    "terminal.external.windowsExec": "%LocalAppData%\\Microsoft\\WindowsApps\\wt.exe",
     "terminal.integrated.defaultProfile.windows": "Git Bash",
     "terminal.integrated.profiles.windows": {
         "Git Bash": {
@@ -55,5 +26,34 @@
         },
         // Remove o PowerShell da lista de seleção do VS Code
         "PowerShell": null
-    }
+    },
+
+    // Controla o rastreio de informações feito por extensões populares
+    "aws.telemetry": false,                        // Desativa rastreio da extensões da AWS
+    "azure.telemetry.enabled": false,              // Desativa rastreio da extensões da Azure
+    "dotnet.help.firstTimeExperience": false,      // Desativa e avisos iniciais do .NET (C#)
+    "extensions.ignoreRecommendations": true,      // Remove "Dicas" e sugestões de extensões (ex: "Você quer instalar a extensão X?")
+    "google.cloud.telemetry.enabled": false,       // Desativa rastreio da extensões da GCP
+    "redhat.telemetry.enabled": false,             // Desativa rastreio das extensões da Red Hat (YAML, Java, OpenShift)
+    "telemetry.telemetryLevel": "off",             // TELEMETRIA GLOBAL (MICROSOFT): Desativa o rastreio de uso e erros do VS Code
+    "update.showReleaseNotes": false,              // Impede a abertura automática da aba de novidades após atualizações
+    "workbench.tips.enabled": false,               // Remove "Dicas" e sugestões de extensões (ex: "Você quer instalar a extensão X?")
+    "workbench.settings.enableNaturalLanguageSearch": false,  // Impede envio de suas buscas por configurações para processamento online
+
+    // Definições para a extensão GitHub Copilot
+    "github.copilot.nextEditSuggestions.enabled": true, // Habilita sugestões de edição do Copilot (ex: "Reescreva este código para mim")
+    "chat.mcp.gallery.enabled": true,                   // Controla acesso à galeria pública de servidores MCP (Model Context Protocol) no GitHub Copilot Chat
+    "chat.viewSessions.orientation": "stacked",         // Exibe as sessões do GitHub Copilot Chat empilhadas (em vez de lado a lado)
+    "chat.tools.urls.autoApprove": {                    // Permite que o GitHub Copilot Chat acesse automaticamente as seguintes URLs
+        "https://code.visualstudio.com": true,
+        "https://code.claude.com": true,
+        "https://github.com/microsoft/vscode/wiki/*": true,
+        "https://nodejs.org": true,
+        "https://docs.npmjs.com": true
+    },
+
+    // Definições para a extensão Claude Code (da Anthropic)
+    "claudeCode.preferredLocation": "panel",  // Exibe o Claude Code no painel inferior (em vez de uma aba lateral)
+    "claudeCode.disableLoginPrompt": true     // Desativa o prompt de login do Claude Code (requer que você já tenha feito login pelo navegador, ou que tenha a variável de ambiente CLAUDE_CODE_SESSION definida, ou que use um AI Gateway)
+
 }

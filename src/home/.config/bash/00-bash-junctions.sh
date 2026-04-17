@@ -5,7 +5,7 @@
 # =============================================================================
 
 # Lista de diretórios para criar Junctions em C:\Users\%USERNAME%
-dot_dirs=(".config" ".local" ".ssh" ".aws")
+dot_dirs=(".cache" ".config" ".local" ".certs" ".ssh" ".aws")
 
 # Função para garantir Junctions
 ensure_junction() {
@@ -23,9 +23,15 @@ ensure_junction() {
             displayInfo "Sugestão"     "Combine conteúdo com '$win_d' antes de remover"
             echo
         else
-            local output
-            output=$(cmd //c "mklink /J $win_c $win_d" 2>&1)
-            [ $? -eq 0 ] && displaySuccess "Windows" "$output" || displayFailure "Windows" "$output"
+            # Executar mklink sem capturar output (evita problemas de encoding)
+            if cmd //c "mklink /J \"$win_c\" \"$win_d\"" >/dev/null 2>&1; then
+                displaySuccess "Windows" "Junção criada para $win_c <<===>> $win_d"
+            else
+                # Capturar apenas mensagens de erro significativas
+                local err_msg
+                err_msg=$(cmd //c "mklink /J \"$win_c\" \"$win_d\"" 2>&1 | sed 's/\r$//' | grep -v "^$" | head -1)
+                displayFailure "Windows" "Erro ao criar junção: ${err_msg:-comando falhou}"
+            fi
         fi
     fi
 }

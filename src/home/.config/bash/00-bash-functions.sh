@@ -27,12 +27,12 @@ displayWarning() { printf '%s[%s]%s %s\n'     "${colorReset}${colorWarning}" "$1
 
 # Garantir que as funções de display de mensagens estejam disponívels para sub-shells
 export -f displayTitle
-export -f displayAction  
-export -f displayScript  
-export -f displayInfo    
-export -f displaySuccess 
-export -f displayFailure 
-export -f displayWarning 
+export -f displayAction
+export -f displayScript
+export -f displayInfo
+export -f displaySuccess
+export -f displayFailure
+export -f displayWarning
 
 #-------------------------------------------------------------------------------------------
 #--- Final do script bash-functions.sh

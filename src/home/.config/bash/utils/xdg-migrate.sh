@@ -1,25 +1,27 @@
 #!/bin/bash
+# Script: ~/.config/bash/utils/xdg-migrate.sh
+# Migrar arquivos de configuração e históricos para os diretórios XDG
+# =============================================================================
 
-# 1. Criar estrutura de diretórios XDG
-mkdir -p "$HOME/.config/git"
-mkdir -p "$HOME/.config/zsh"
-mkdir -p "$HOME/.config/vim"
-mkdir -p "$HOME/.local/share"
-mkdir -p "$HOME/.local/state/less"
-mkdir -p "$HOME/.local/state/vim"
-
+# Função para mover arquivos
 display_move() {
     if [ -f "$1" ]; then
+
+        # Garante que o diretório de destino existe
+        mkdir -p "$(dirname "$2")"
+
+        # Evita sobrescrever arquivos existentes
         if [ ! -f "$2" ]; then
             mv "$1" "$2"
             echo "[OK] Movido: $1 -> $2"
         else
             echo "[AVISO] Destino já existe, não movido: $2"
         fi
+
     fi
 }
 
-# 2. Migrar arquivos
+# Exibir mensagem de migração de arquivos
 echo "Iniciando migração de arquivos..."
 
 # Git
@@ -31,11 +33,8 @@ line='set viminfo+=n~/.local/state/vim/viminfo'
 file="$HOME/.config/vim/vimrc"
 grep -Fxq "$line" "$file" || echo -e "\n$line" >> "$file"
 
-# Zsh
-display_move "$HOME/.zshrc" "$HOME/.config/zsh/.zshrc"
-
 # Históricos (opcional, você pode apenas deletar os antigos)
-display_move "$HOME/.node_repl_history" "$HOME/.local/share/node_repl_history"
+display_move "$HOME/.node_repl_history" "$HOME/.local/state/node_repl_history"
 display_move "$HOME/.lesshst" "$HOME/.local/state/less/history"
 
 echo "---------------------------------------------------"

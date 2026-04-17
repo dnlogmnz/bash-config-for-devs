@@ -22,7 +22,7 @@ if [ -d $XDG_CONFIG_HOME/bash ]; then
 fi
 
 # Limpa a variável rc do escopo global
-unset rc
+unset rc local_bin
 
 #--------------------------------------------------------------------------------
 #--- Final do script ~/.bashrc

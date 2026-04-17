@@ -38,7 +38,7 @@ export NPM_CONFIG_REGISTRY="https://registry.npmjs.org/"
 export NPM_CONFIG_USERCONFIG="$XDG_CONFIG_HOME/npm/npmrc"
 
 # Variáveis oficiais para configurações do Node.js, com valores aderentes ao XDG
-export NODE_REPL_HISTORY="$XDG_STATE_HOME/node_repl_history"
+export NODE_REPL_HISTORY="$XDG_STATE_HOME/node/repl_history"
 
 # Adicionar Node.js ao PATH
 if [[ ":$PATH:" != *":$NODE_CURRENT:"* ]]; then

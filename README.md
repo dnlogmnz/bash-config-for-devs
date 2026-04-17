@@ -37,7 +37,7 @@ O padrão XDG define variáveis de ambiente que apontam para locais específicos
 *   **Binários do Usuário (`$HOME/.local/bin/`)**: Embora não seja estritamente parte da especificação XDG original, o FHS recomenda este local para scripts customizados e executáveis instalados pelo usuário que devem ser incluídos no `$PATH`.
 
 > [!TIP]
-> Evite a prática antiga de criar arquivos ocultos (`.arquivo`) diretamente na raiz do seu `$HOME`. Seguir o padrão XDG torna seu ambiente modular, facilita o backup seletivo e simplifica a migração de *dotfiles* entre diferentes máquinas.
+> Evite a prática antiga de criar arquivos ocultos (`.arquivo`) diretamente na raiz do seu `$HOME`. Seguir o padrão XDG torna seu ambiente modular, facilita o backup seletivo e simplifica a migração de *dotfiles* entre diferentes máquinas. Verifique se a ferramenta que você quer adicionar ao seu rol de utilitários é aderente ao padrão XDG antes de criar qualquer arquivo ou pasta sob o seu $HOME.
 
 
 ---
