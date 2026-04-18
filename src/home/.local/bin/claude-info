@@ -29,19 +29,18 @@ displayInfo "CLAUDE_CODE_GIT_BASH_PATH" "${CLAUDE_CODE_GIT_BASH_PATH:-Não defin
 displayInfo "CLAUDE_CONFIG_DIR"         "${CLAUDE_CONFIG_DIR:-Não definida}"
 displayInfo "NODE_EXTRA_CA_CERTS"       "${NODE_EXTRA_CA_CERTS:-Não definida}"
 
-echo ""
-displayAction "Configuração do Projeto para Claude Code"
 if git rev-parse --git-dir >/dev/null 2>&1; then
-    local project_root=$(git rev-parse --show-toplevel)
-    local project_settings="$project_root/.claude/settings.json"
+    echo ""
+    displayAction "Configuração do Projeto para Claude Code"
+
+    project_root=$(git rev-parse --show-toplevel)
+    project_settings="$project_root/.claude/settings.json"
     
     if [[ -f "$project_settings" ]]; then
-        displayInfo "Configuração" "Encontrada em $project_root/.claude/settings.json"
+        displayInfo "Configuração (opcional)" "Encontrada em $project_root/.claude/settings.json"
     else
-        displayInfo "Configuração" "Não encontrada (opcional)"
+        displayInfo "Configuração (opcional)" "Não encontrada"
     fi
-else
-    displayInfo "Configuração" "Esta não é uma pasta de projeto Git"
 fi
 
 #-------------------------------------------------------------------------------------------
