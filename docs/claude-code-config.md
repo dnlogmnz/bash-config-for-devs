@@ -1,4 +1,4 @@
-# 🤖 Guia do Bash RC for Devs: Claude Code v3.0
+# 🤖 Guia do Bash RC for Devs: Claude Code
 
 O **Claude Code** é uma ferramenta de linha de comando (CLI) desenvolvida pela Anthropic. Diferente de IDEs de copiloto, ele opera diretamente no terminal, atuando como um agente que permite interagir com a base de código, executar comandos, realizar testes, e realizar refatorações automatizadas.
 
@@ -14,27 +14,27 @@ Abaixo, explicamos como configurar seu ambiente para extrair o máximo do Claude
 
 O Claude Code busca configurações em seis camadas. Se uma variável estiver definida em duas camadas, a de menor número (mais específica) vence:
 
-### Nível 1: Flags de Comando
+### Nível 1: Terminal: Flags na Linha de Comando
 - **Onde:** Ao executar o Claude Code CLI diretamente na linha de comandos (ex: `claude --model claude-3-5-sonnet-20241022`).
-- **Uso:** Para algum teste específico, ou alguma configuração particular em scripts de automação.
+- **Uso:** Para algum teste específico, ou alguma configuração particular para scripts de automação.
 
-### Nível 2: Variáveis de Ambiente do Shell (Terminal Atual)
+### Nível 2: Terminal: Variáveis de Ambiente do Shell
 - **Onde:** Definidas via `export` no Bash ou via script `$HOME/.config/bash/31-claude-code-envs.sh`.
 - **Uso:** Configurações temporárias ou atalhos que afetam apenas o terminal aberto no momento.
 
-### Nível 3: Settings Pessoais de Projeto 
+### Nível 3: Claude Code: Arquivo de Configurações Pessoais de Projeto
 - **Onde:** Pasta raiz do repositório atual (`PROJETO/.claude/settings.local.json`)
 - **Uso:** Preferências pessoais do desenvolvedor que **não devem** ser versionadas no Git (inclua este arquivo no `.gitignore`).
 
-### Nível 4: Settings de Projeto Compartilhadas 
+### Nível 4: Claude Code: Arquivo de Configurações de Projeto
 - **Onde:** Pasta raiz do repositório atual (`PROJETO/.claude/settings.json`)
 - **Uso:** Definições e configurações para a equipe inteira usar, garantindo consistência no uso do Claude Code, e que **devem** ser versionadas no Git.
 
-### Nível 5: Settings Globais de Usuário 
-- **Onde (Windows):** Arquivo `%USERPROFILE%\.claude\settings.json`
+### Nível 5: Claude Code: Arquivo de Configurações Globais
+- **Onde:** Arquivo `%USERPROFILE%\.claude\settings.json`
 - **Uso:** Preferências de interface, telemetria e modelos que valem para qualquer projeto em sua máquina.
 
-### Nível 6: Variáveis de Ambiente do Usuário
+### Nível 6: Windows: Variáveis de Ambiente do Usuário
 - **Onde:** "Editar variáveis de ambiente para sua conta".
 - **Uso:** Definições estruturais. É o local mais seguro para a `ANTHROPIC_API_KEY`, garantindo que ela esteja disponível para IDEs, PowerShell e Git Bash simultaneamente.
 
