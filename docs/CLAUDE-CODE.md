@@ -2,7 +2,8 @@
 ## Configuração, Instalação e Referência de Variáveis de Ambiente
 
 > **Última atualização:** abril/2026  
-> **Público:** Desenvolvedores Windows 11 com Git Bash configurado no padrão XDG
+> **Público:** Desenvolvedores Windows 11 com Git Bash configurado no padrão XDG  
+> **Finalidade:** Este documento descreve em sequência todo o processo de configuração e instalação do Claude Code para ambiente com **Windows 11 e Git Bash**.  
 
 ---
 
@@ -17,9 +18,8 @@ O **Claude Code** pode ser usado com diferentes provedores de LLM:
 - **Google Cloud Vertex AI:** autenticação via credenciais GCP (não usa `ANTHROPIC_API_KEY`).
 - **AI Gateway (ex.: LiteLLM):** autenticação via token do Gateway (variável `ANTHROPIC_AUTH_TOKEN`).
 
-> **Sobre modelos de outros provedores:** O **Claude Code** foi projetado especificamente para trabalhar com modelos Claude. Embora tecnicamente seja possível apontar um gateway (como LiteLLM) para modelos de outros fabricantes (ex.: `gemini-2.5-pro`), isso **não é suportado oficialmente** pela Anthropic. Funcionalidades como ferramentas agênticas, prompt caching e alguns comandos internos dependem de comportamentos específicos dos modelos Claude e podem apresentar erros imprevisíveis com outros modelos. Recomenda-se fortemente usar apenas modelos Claude.
+> **Sobre modelos de outros provedores:**<br> O **Claude Code** foi projetado especificamente para trabalhar com modelos Claude. Embora tecnicamente seja possível apontar um gateway (como LiteLLM) para modelos de outros fabricantes (ex.: `gemini-2.5-pro`), isso **não é suportado oficialmente** pela Anthropic. Funcionalidades como ferramentas agênticas, prompt caching e alguns comandos internos dependem de comportamentos específicos dos modelos Claude e podem apresentar erros imprevisíveis com outros modelos. Recomenda-se fortemente usar apenas modelos Claude.
 
-Este documento descreve em sequência todo o processo de configuração e instalação para o ambiente **Windows 11 com Git Bash**.
 
 ---
 
@@ -38,34 +38,32 @@ O **Claude Code** busca configurações em camadas. Quando a mesma variável est
 | **5** | Usuário (global) | `$HOME/.config/claude/settings.json` *(padrão XDG)* |
 | **6** | Sistema (Windows) | "Editar variáveis de ambiente para sua conta" |
 
-> **Nota XDG:** O **Bash RC for Devs** adota o padrão XDG, portanto o diretório global do Claude Code é `$HOME/.config/claude` (em vez do padrão `%USERPROFILE%\.claude` usado pela maioria das instalações sem XDG). Para isso, a variável `CLAUDE_CODE_DIR` **deve** ser definida apontando para esse diretório, conforme explicado na seção 2.1.
+> **Nota sobre XDG:**<br> O **Bash RC for Devs** adota o padrão de diretórios XDG, portanto o diretório global do Claude Code é `$HOME/.config/claude` (em vez do padrão `C:\Users\%USERNAME%\.claude` usado pela maioria das instalações sem XDG). Para wue você possa usar os shell scripts deste projeto, a variável `CLAUDE_CODE_DIR` **deve** ser definida apontando para esse diretório, conforme explicado na seção 2.1.
 
-### 1.2 Autenticação: `ANTHROPIC_API_KEY` vs. `ANTHROPIC_AUTH_TOKEN`
+### 1.2 Provedores e Modelos de Autenticação
 
-Estas duas variáveis têm comportamentos **diferentes** e são mutuamente exclusivas na prática:
+Por padrão, o **Claude Code** envia suas requisições diretamente para os modelos (LLMs) da Anthropic.
 
-| Variável | Quando usar | Como é enviada |
-|---|---|---|
-| `ANTHROPIC_API_KEY` | Acesso direto à API da Anthropic (Console) | Header `X-Api-Key` |
-| `ANTHROPIC_AUTH_TOKEN` | AI Gateway / LiteLLM (qualquer provedor não-Anthropic) | Header `Authorization: Bearer <valor>` |
+Caso prefira usar um provedor diferente — como Amazon Bedrock, Google Vertex AI ou um AI Gateway — é possível redirecionar essas requisições por meio de variáveis de ambiente, cada uma com seu próprio modelo de autenticação e cobrança.
 
-**Regra importante:** Quando `ANTHROPIC_API_KEY` está definida, o Claude Code **desabilita** o fluxo OAuth (login via browser com sua conta claude.ai). Se você assina o plano Pro/Max e quer usar a sua assinatura (sem API Key separada), **não defina** `ANTHROPIC_API_KEY` — deixe o Claude Code fazer o login OAuth normalmente.
+| Provedor | Variável de Ativação | Modelo de Autenticação | URL de Gerenciamento | Modelo de Cobrança |
+| --- | --- | --- | --- | --- |
+| **Anthropic (Web)** | Nenhuma (padrão) | Login OAuth (`claude.exe` → browser) | claude.ai/settings | Assinatura Pro, Max ou Team |
+| **Anthropic (API)** | `ANTHROPIC_API_KEY` | API Key do Console | console.anthropic.com | Pay-as-you-go (Créditos pré-pagos) |
+| **AI Gateway** | `ANTHROPIC_AUTH_TOKEN` | API Key do seu Gateway | Definida pelo seu Gateway | Consumo de tokens via Gateway (LiteLLM, TrueFoundry, Portkey, etc) |
+| **Amazon Bedrock** | `CLAUDE_CODE_USE_BEDROCK=1` | Credenciais AWS (AWS_...) | console.aws.amazon.com | Consumo de Tokens via AWS Billing |
+| **Google Vertex AI** | `CLAUDE_CODE_USE_VERTEX=1` | Credenciais GCP (GCLOUD_... ou ADC) | console.cloud.google.com | Consumo de Tokens via GCP Billing |
+| **Azure Foundry** | `CLAUDE_CODE_USE_FOUNDRY=1` | API Key / Entra ID | Consumo de Tokens via Azure Billing |
 
-| Provedor | Variável de autenticação recomendada |
-|---|---|
-| **Anthropic (assinatura Pro/Max/Team)** | Nenhuma — use o login OAuth (`claude` → browser) |
-| **Anthropic (API Key do Console)** | `ANTHROPIC_API_KEY` |
-| **AI Gateway / LiteLLM** | `ANTHROPIC_AUTH_TOKEN` |
-| **Amazon Bedrock** | Credenciais AWS (`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, etc.) |
-| **Google Vertex AI** | Credenciais GCP (`GOOGLE_APPLICATION_CREDENTIALS`, etc.) |
+> **Regra importante:**<br> Quando `ANTHROPIC_API_KEY` está definida, o Claude Code **desabilita** o fluxo OAuth (login via browser com sua conta `claude.ai`). Se você assina o plano Pro/Max e quer usar a sua assinatura (sem API Key separada), **não defina** `ANTHROPIC_API_KEY` — deixe o Claude Code fazer o login com OAuth via browser.
 
 ### 1.3 Sobre certificados SSL corporativos
 
 O binário nativo do **Claude Code** integra automaticamente a loja de certificados do sistema operacional. Na maioria dos ambientes corporativos com proxy SSL, isso é suficiente — **sem necessidade de configuração adicional**.
 
-A variável `NODE_EXTRA_CA_CERTS` é necessária apenas quando o Claude Code foi instalado via `npm` (método legado) **ou** quando o proxy corporativo usa uma CA raiz não presente na loja do Windows. O script `31-claude-code-cert.sh` do **Bash RC for Devs** automatiza esse processo para quem precisar.
+A variável `NODE_EXTRA_CA_CERTS` é necessária apenas quando o Claude Code foi instalado via `npm` (método legado) **ou** quando o proxy corporativo usa uma CA raiz não presente na loja do Windows. O script `31-claude-code-cert.sh` do **Bash RC for Devs** apresenta um aviso (configurável) se essa variável não estiver definida.
 
-> **Para assinantes Claude Pro sem proxy corporativo:** você provavelmente não precisa configurar `NODE_EXTRA_CA_CERTS`.
+> **Para assinantes Claude Pro sem proxy corporativo:**<br> Você provavelmente não precisa configurar `NODE_EXTRA_CA_CERTS`.
 
 ---
 
@@ -73,17 +71,21 @@ A variável `NODE_EXTRA_CA_CERTS` é necessária apenas quando o Claude Code foi
 
 Execute os passos desta seção **na ordem indicada**, antes de instalar o Claude Code.
 
-### 2.1 Definir `CLAUDE_CODE_DIR` (obrigatório para padrão XDG)
+### 2.1 Definir `CLAUDE_CODE_DIR`
 
-O **Bash RC for Devs** usa XDG, então o diretório de configuração global do Claude Code **não** é o padrão `%USERPROFILE%\.claude`. É necessário informar ao Claude Code onde procurar suas configurações.
+O **Claude Code** armazena suas configurações em um arquivo chamado `settings.json`.
 
-Abra **"Editar as variáveis de ambiente para sua conta"** e adicione:
+Por padrão, esse arquivo fica em `C:\Users\%USERNAME%\.claude` — mas como o **Bash RC for Devs** adota a convenção XDG, o diretório passa a ser `C:\Users\%USERNAME%\.config\claude`.
 
-| Nome | Valor |
+Como o **Claude Code** pode ser executado em diferentes ambientes — dentro do Git Bash ou como extensão do VS Code, por exemplo — é necessário informar explicitamente a todos eles onde encontrar esse diretório de configuração usando a variável `CLAUDE_CODE_DIR`.
+
+Abra a aplicação do Windows **"Editar as variáveis de ambiente para sua conta"** e, na parte superior (`Variáveis de ambiente para <SEU USUÁRIO>`), adicione uma nova variável de ambiente:
+
+| Nome | Valor|
 |---|---|
 | `CLAUDE_CODE_DIR` | `C:\Users\%USERNAME%\.config\claude` |
 
-> **Por que variável de ambiente do Windows e não `settings.json`?** O Claude Code lê `CLAUDE_CODE_DIR` **antes** de abrir qualquer arquivo de configuração, então ela precisa estar disponível no nível do sistema operacional.
+> **Por que o Bash RC for Devs exige a definição dessa variável?**<br> O Claude Code lê `CLAUDE_CODE_DIR` **antes** de abrir qualquer arquivo de configuração, então ela precisa estar disponível no nível do sistema operacional.
 
 ### 2.2 Definir `CLAUDE_CODE_GIT_BASH_PATH` (obrigatório)
 
@@ -94,7 +96,12 @@ Abra um Git Bash e execute:
 where bash
 ```
 
-O resultado será o caminho do `bash.exe`. No seu caso (instalação em `D:\%USERNAME%\Apps\Git`):
+O resultado será o caminho do `bash.exe`. O valor esperado é o local padrão de instalação do Git for Windows:
+```
+C:\Users\%USERNAME%\AppData\Local\Programs\Git\bin.bash.exe
+```
+
+Mesmo se você resolveu instalar o Git for Windows em um diretório diferente do padrão, o comando vai mostrar a pasta de instalação, por exemplo:
 ```
 D:\%USERNAME%\Apps\Git\bin\bash.exe
 ```
@@ -105,7 +112,7 @@ Abra **"Editar as variáveis de ambiente para sua conta"** e adicione:
 |---|---|
 | `CLAUDE_CODE_GIT_BASH_PATH` | `D:\%USERNAME%\Apps\Git\bin\bash.exe` |
 
-> **Atenção:** use o caminho real retornado pelo `where bash`, que pode diferir dependendo de como o Git for Windows foi instalado.
+> **Atenção:**<br> Use o caminho real retornado pelo `where bash`, que pode diferir dependendo de como o Git for Windows foi instalado.
 
 ### 2.3 Criar o diretório e o `settings.json` global (Nível 5)
 
@@ -150,7 +157,7 @@ Para quem tem uma API Key gerada em [platform.claude.com](https://platform.claud
 }
 ```
 
-#### Template C — AI Gateway / LiteLLM
+#### Template C — AI Gateway (p.ex: LiteLLM)
 
 Para quem acessa modelos Claude via um proxy como LiteLLM (ou qualquer gateway compatível com a API da Anthropic):
 
@@ -170,7 +177,7 @@ Para quem acessa modelos Claude via um proxy como LiteLLM (ou qualquer gateway c
 }
 ```
 
-> **Sobre `CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS`:** O Claude Code envia automaticamente headers `anthropic-beta` com funcionalidades experimentais. Gateways e provedores terceiros frequentemente rejeitam esses headers com erro `"Unexpected value(s) for the anthropic-beta header"`. Definir `CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS=1` resolve esse problema.
+> **Sobre `CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS`:**<br> O Claude Code envia automaticamente headers `anthropic-beta` com funcionalidades experimentais. Gateways e provedores terceiros frequentemente rejeitam esses headers com erro `"Unexpected value(s) for the anthropic-beta header"`. Definir `CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS=1` resolve esse problema.
 
 #### Template D — Amazon Bedrock
 
@@ -188,7 +195,7 @@ Para quem acessa Claude via AWS Bedrock. A autenticação é feita via credencia
 }
 ```
 
-> **Nota:** O login interativo via `claude` também funciona — selecione "3rd-party platform" → "Amazon Bedrock" e o assistente de configuração guia o restante. Consulte [docs.claude.com/en/docs/claude-code/amazon-bedrock](https://code.claude.com/docs/en/amazon-bedrock) para configuração completa de IAM e modelos.
+> **Nota:**<br> O login interativo via `claude` também funciona — selecione "3rd-party platform" → "Amazon Bedrock" e o assistente de configuração guia o restante. Consulte [docs.claude.com/en/docs/claude-code/amazon-bedrock](https://code.claude.com/docs/pt/amazon-bedrock) para configuração completa de IAM e modelos.
 
 #### Template E — Google Cloud Vertex AI
 
@@ -206,7 +213,7 @@ Para quem acessa Claude via GCP Vertex AI:
 }
 ```
 
-> **Nota:** O login interativo via `claude` também funciona (requer Claude Code v2.1.98+) — selecione "3rd-party platform" → "Google Vertex AI". Consulte [code.claude.com/docs/en/google-vertex-ai](https://code.claude.com/docs/en/google-vertex-ai) para configuração completa de IAM e modelos.
+> **Nota:**<br> O login interativo via `claude` também funciona (requer Claude Code v2.1.98+) — selecione "3rd-party platform" → "Google Vertex AI". Consulte [code.claude.com/docs/pt/google-vertex-ai](https://code.claude.com/docs/pt/google-vertex-ai) para configuração completa de IAM e modelos.
 
 ### 2.5 Confirmar instalação do Node.js (apenas para método npm legado)
 
@@ -234,7 +241,7 @@ Em seguida, adicione ao `settings.json` global:
 "NODE_EXTRA_CA_CERTS": "C:\\Users\\%USERNAME%\\.config\\certs\\ca_root.pem"
 ```
 
-Ou defina nas variáveis de ambiente do Windows:
+Se você tem outras ferramentas baseadas em Node.js que precisam do certificado, no lugar de usar o arquivo `settings.json`, defina nas variáveis de ambiente do Windows:
 
 | Nome | Valor |
 |---|---|
@@ -252,9 +259,9 @@ Abra um **PowerShell** (não precisa de Administrador) e execute:
 irm https://claude.ai/install.ps1 | iex
 ```
 
-O instalador baixa o binário nativo, o coloca em `%USERPROFILE%\.local\bin\claude.exe` e configura atualização automática em segundo plano.
+O instalador baixa o binário nativo, o coloca em `C:\Users\%USERNAME%\.local\bin\claude.exe` e configura atualização automática em segundo plano.
 
-> **Por que não usar `npm install -g`?** O método npm é considerado legado pela Anthropic desde o início de 2026. O instalador nativo não depende do Node.js, é mais rápido, se atualiza automaticamente e é o método primário testado e suportado pela Anthropic.
+> **Por que não usar `npm install -g`?**<br> O método npm é considerado legado pela Anthropic desde o início de 2026. O instalador nativo não depende do Node.js, é mais rápido, se atualiza automaticamente e é o método primário testado e suportado pela Anthropic.
 
 Feche o PowerShell e abra um novo **Git Bash** para que o PATH seja atualizado.
 
@@ -341,17 +348,21 @@ Para controlar permissões e comportamento do Claude Code em projetos de equipe,
 }
 ```
 
-> **Versionar no git:** este arquivo deve ser commitado. Para preferências pessoais que não devem ser compartilhadas, use `.claude/settings.local.json` e adicione-o ao `.gitignore`.
+> **Versionar no git:**<br> este arquivo deve ser commitado. Para preferências pessoais que não devem ser compartilhadas, use `.claude/settings.local.json` e adicione-o ao `.gitignore`.
 
 ---
 
 ## Parte 5 — Desinstalação
 
-### CLI
+### Claude Code CLI
 ```bash
-rm "$USERPROFILE/.local/bin/claude.exe"
-rm -rf "$USERPROFILE/.claude"
 rm -f "$USERPROFILE/.claude.json"
+rm -f "$USERPROFILE/.local/bin/claude.exe"
+rm -rf "$USERPROFILE/.claude/"
+rm -rf "$USERPROFILE/.config/claude/"
+rm -rf "$USERPROFILE/.cache/claude/"
+rm -rf "$USERPROFILE/.local/share/claude/"
+rm -rf "$USERPROFILE/.local/state/claude/"
 ```
 
 ### Extensão VS Code
@@ -371,10 +382,10 @@ Abra "Editar as variáveis de ambiente para sua conta" e remova:
 
 | Item | Caminho |
 |---|---|
-| Binário | `%USERPROFILE%\.local\bin\claude.exe` |
-| Settings global (XDG) | `%USERPROFILE%\.config\claude\settings.json` |
-| Credenciais OAuth | `%USERPROFILE%\.claude\.credentials.json` |
-| Preferências da UI | `%USERPROFILE%\.claude.json` |
+| Binário | `C:\Users\%USERNAME%\.local\bin\claude.exe` |
+| Settings global (XDG) | `C:\Users\%USERNAME%\.config\claude\settings.json` |
+| Credenciais OAuth | `C:\Users\%USERNAME%\.claude\.credentials.json` |
+| Preferências da UI | `C:\Users\%USERNAME%\.claude.json` |
 
 ### 6.2 Variáveis de ambiente essenciais
 
@@ -398,7 +409,7 @@ Abra "Editar as variáveis de ambiente para sua conta" e remova:
 | `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC` | Desabilitar tráfego não-essencial |
 | `NODE_EXTRA_CA_CERTS` | Certificado CA raiz para ambientes corporativos com proxy SSL |
 
-> Referência completa: [code.claude.com/docs/en/env-vars](https://code.claude.com/docs/en/env-vars)
+> Referência completa: [code.claude.com/docs/pt/env-vars](https://code.claude.com/docs/pt/env-vars)
 
 ### 6.3 Comandos úteis
 
@@ -439,15 +450,15 @@ Verifique se `CLAUDE_CODE_GIT_BASH_PATH` aponta para o `bash.exe` correto com `w
 
 ---
 
-## Anexo — Fontes
+## Fontes de consulta
 
-- [Claude Code Docs — Quickstart](https://code.claude.com/docs/en/quickstart)
-- [Claude Code Docs — Advanced Setup](https://code.claude.com/docs/en/setup)
-- [Claude Code Docs — Environment Variables](https://code.claude.com/docs/en/env-vars)
-- [Claude Code Docs — Settings](https://code.claude.com/docs/en/settings)
-- [Claude Code Docs — Authentication](https://code.claude.com/docs/en/authentication)
-- [Claude Code Docs — Amazon Bedrock](https://code.claude.com/docs/en/amazon-bedrock)
-- [Claude Code Docs — Google Vertex AI](https://code.claude.com/docs/en/google-vertex-ai)
-- [Claude Code Docs — LLM Gateway](https://code.claude.com/docs/en/llm-gateway)
-- [Claude Code Docs — Network Configuration](https://code.claude.com/docs/en/network-config)
-- [Planos de Assinatura do Claude Code](https://support.claude.com/en/articles/11049762-choosing-a-claude-plan)
+- [Claude Code Docs — Quickstart](https://code.claude.com/docs/pt/quickstart)
+- [Claude Code Docs — Configurações do Claude Code](https://code.claude.com/docs/pt/settings)
+- [Claude Code Docs — Variáveis de ambiente](https://code.claude.com/docs/pt/env-vars)
+- [Claude Code Docs — Configuração avançada](https://code.claude.com/docs/pt/setup)
+- [Claude Code Docs — Autenticação](https://code.claude.com/docs/pt/authentication)
+- [Claude Code Docs — Configuração de rede empresarial](https://code.claude.com/docs/pt/network-config)
+- [Claude Code Docs — Amazon Bedrock](https://code.claude.com/docs/pt/amazon-bedrock)
+- [Claude Code Docs — Google Vertex AI](https://code.claude.com/docs/pt/google-vertex-ai)
+- [Claude Code Docs — LLM Gateway](https://code.claude.com/docs/pt/llm-gateway)
+- [Claude Support — Escolhendo um plano Claude](https://support.claude.com/pt/articles/11049762-choosing-a-claude-plan)

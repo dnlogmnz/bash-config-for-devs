@@ -14,10 +14,11 @@ venv.bak/
 *.log
 *.bak
 *.swp
+*.orig
 ~$*
 *~
 
-# Binaries for programs and plugins
+# Binaries and compiled files
 *.exe
 *.exe~
 *.dll
@@ -33,6 +34,22 @@ pids
 # Editor/IDE
 .idea/
 .vscode/
+*.code-workspace
+
+# Windows system files
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.lnk
+*.stackdump
+
+# Certificates and private keys (sensitive)
+*.pem
+*.key
+*.p12
+*.pfx
 
 # Testing
 *.test
