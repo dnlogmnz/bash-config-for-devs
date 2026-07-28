@@ -28,6 +28,9 @@ export HISTFILESIZE=20000
 export HISTCONTROL=ignoredups:erasedups
 export HISTFILE="$XDG_STATE_HOME/bashrc/history"
 
+# Configuração personalizada do prompt (configuração de virtualenv em "python-envs.sh")
+PS1='\[\033]0;$TITLEPREFIX:$PWD\007\]\n\[\033[32m\]\D{%F %H:%M (%z)} \[\033[35m\]$MSYSTEM \[\033[33m\]\w\[\033[36m\]`__git_ps1`\n${VIRTUAL_ENV_PROMPT:+\[\033[31m\]($VIRTUAL_ENV_PROMPT) }\[\033[0m\]$ '
+
 # Configurações para aplicativos GNU com Suporte Nativo ao XDG
 export LESSCHARSET=utf-8
 export LESSHISTFILE="$XDG_STATE_HOME/less/history"

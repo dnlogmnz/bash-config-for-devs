@@ -12,7 +12,6 @@
 # - Use `uv python install` para instalar versões e `uv tool install` para ferramentas globais.
 # =============================================================================================
 
-
 # Histórico de comandos digitados no intepretador python
 export PYTHONHISTORY="${XDG_STATE_HOME:-$HOME/.local/state}/python/history"
 [ -d "${PYTHONHISTORY%/*}" ] || mkdir -p "${PYTHONHISTORY%/*}"
@@ -21,6 +20,9 @@ export PYTHONHISTORY="${XDG_STATE_HOME:-$HOME/.local/state}/python/history"
 export PYTHONUNBUFFERED="1"         # Outputs (print, logs) direto ao terminal, sem uso de buffer
 export PYTHONIOENCODING="utf-8"     # Logs com caracteres especiais sem quebrar o coletor de logs
 export PYTHONDONTWRITEBYTECODE="1"  # Não cria arquivos .pyc (bytecode): acelera import de módulos
+
+# Configurações do prompt do Virtualenv (afeta PS1 definido em "bashrc-envs.sh")
+export VIRTUAL_ENV_DISABLE_PROMPT=1
 
 #----------------------------------------------------------------------------------------------
 #--- Final do script python-envs.sh
