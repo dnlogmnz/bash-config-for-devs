@@ -1,178 +1,204 @@
-# Scripts de Inicialização (RC) para Bash
+# Bashrc for Devs 🚀
 
-Este repositório oferece uma coleção modular de scripts Bash projetados para configurar e otimizar o ambiente de desenvolvimento local, garantindo uma estrutura robusta, organizada e compatível com os padrões modernos de sistemas Unix-like e Git Bash.
+Um framework modular e padronizado de configuração Bash para desenvolvedores Windows que utilizam o **Git Bash**.
 
-## 🎯 Objetivo do Projeto
-
-Um desenvolvedor de aplicações utiliza diversos ecossistemas que exigem variáveis de ambiente e configurações específicas no terminal `bash`. Seguem alguns exemplos de ferramentas comuns:
-
-  * **Versionamento**: `git.exe` (Git CLI) e `gh.cli` (GitHub CLI).
-
-  * **Runtimes e Linters**: para desenvolver aplicações usando `node`, ou então `python` (e, junto com este último, usar também `uv` e `ruff`).
-
-  * **Virtualização**: Docker Desktop para Windows (assinatura Docker Personal).
-
-  * **Cloud CLIs**: `aws.exe` (AWS CLI v2), `az.exe` (Azure CLI) e `gcloud.exe` (GCP CLI).
-
-  * Entre outros...
-
-Frequentemente, isso resulta em um arquivo `~/.bashrc` desorganizado e difícil de manter. Além disso, algumas dessas ferramentas criam seus próprios arquivos *dotfiles* na raiz do seu `$HOME`, tornando o backup e transferência de suas configurações para outro equipamento um exercício bastante complexo.
-
-Este projeto propõe uma **arquitetura modular**: em vez de um único arquivo gigante, as configurações são separadas por ferramenta (Git, Docker, AWS, etc) e, para cada ferramenta, por responsabilidade (ambiente, funções e aliases), facilitando o versionamento e a portabilidade de seus *dotfiles*.
+O **`bashrc-for-devs`** organiza o ambiente de desenvolvimento adotando as especificações **XDG Base Directory** e **FHS (Filesystem Hierarchy Standard)**. Ele desacopla ferramentas e linguagens do drive de sistema (`C:`), mantém o diretório `$HOME` limpo e livre de arquivos ocultos (*dotfiles*) dispersos, e integra ferramentas nativas do Windows de forma transparente via Junções NTFS.
 
 ---
 
-## 🏛️ Fundamentação: O Padrão XDG/FHS
+## 🎯 Por que usar este projeto?
 
-Para manter o diretório `$HOME` limpo e organizado, este projeto adota a **XDG Base Directory Specification** em conjunto com o **FHS (Filesystem Hierarchy Standard)**. Este é o padrão contemporâneo para sistemas Unix-like (Linux, macOS e Git Bash), projetado para evitar a poluição da raiz do diretório de usuário com arquivos ocultos (os chamados *dotfiles*).
+No Windows, ambientes de desenvolvimento frequentemente sofrem com:
+* **Poluição do diretório pessoal (`%USERPROFILE%` / `$HOME`)**: Dezenas de ferramentas CLI (Git, AWS, Python, Node, Claude, Docker) criam arquivos e pastas ocultas na raiz do seu perfil.
+* **Arquivos `.bashrc` monolíticos**: Centenas de linhas desordenadas misturando variáveis de ambiente, aliases pessoais, certificados e configurações de runtime.
+* **Pressão de espaço no disco de sistema (`C:`)**: O acúmulo de caches de compiladores, dependências e dados de CLIs sobrecarrega o drive do sistema operacional.
 
-### O Padrão XDG na Prática
-
-O padrão XDG define variáveis de ambiente que apontam para locais específicos para cada tipo de arquivo gerado por aplicações ou pelo usuário:
-
-*   **`$XDG_CONFIG_HOME` (`$HOME/.config/`)**: Destinado a arquivos de configuração (ex: aliases, preferências de editores, envs).
-*   **`$XDG_DATA_HOME` (`$HOME/.local/share/`)**: Destinado a dados persistentes que não são configurações (ex: bancos de dados locais, ícones, fontes).
-*   **`$XDG_STATE_HOME` (`$HOME/.local/state/`)**: Destinado a arquivos de estado que não devem persistir entre migrações (ex: logs, histórico de comandos, estados de sessões).
-*   **`$XDG_CACHE_HOME` (`$HOME/.cache/`)**: Destinado a dados não essenciais que podem ser apagados para liberar espaço (ex: caches de compiladores ou gerenciadores de pacotes).
-*   **Binários do Usuário (`$HOME/.local/bin/`)**: Embora não seja estritamente parte da especificação XDG original, o FHS recomenda este local para scripts customizados e executáveis instalados pelo usuário que devem ser incluídos no `$PATH`.
-
-> [!TIP]
-> * Não crie arquivos ocultos diretamente na raiz do seu `$HOME`.
-> * Prefira colocar arquivos de configuração em `$XDG_CONFIG_HOME` (por exemplo, `$HOME/.config`) e dados em `$XDG_DATA_HOME` (por exemplo, `$HOME/.local/share`).
-> * Isso facilita backups, sincronização entre máquinas e mantém seu diretório pessoal organizado.
-> * Antes de adicionar arquivos em `$HOME`, verifique se a ferramenta suporta XDG ou permite configurar o diretório de configuração.
-
+### O que o `bashrc-for-devs` resolve:
+* **Conformidade XDG**: Configurações em `~/.config`, dados em `~/.local/share`, logs/sessões em `~/.local/state` e caches temporários em `~/.cache`.
+* **Separação por Unidade de Disco**: Permite que o `$HOME` e as aplicações (`APPS_BASE`) fiquem em um drive dedicado (ex.: `D:\<USUARIO>\home` e `D:\<USUARIO>\Apps`), reservando o drive `C:` exclusivamente para o Windows.
+* **Junções NTFS Transparentes**: Aplicações Windows que insistem em gravar em `C:\Users\%USERNAME%\.aws` ou `.claude` são redirecionadas silenciosamente para o seu `$HOME` sem necessidade de privilégios de Administrador.
+* **Suíte de Utilitários Prontos**: Comandos integrados ao terminal para gerenciamento leve de versões do Node.js, scaffolding de projetos Python modernos com `uv`, diagnóstico de ambiente e helpers de Git.
 
 ---
 
+## 📋 Pré-requisitos
 
-### 📦 Como este projeto utiliza essa estrutura
+* **Sistema Operacional**: Windows 10 ou Windows 11.
+* **Shell**: [Git for Windows](https://gitforwindows.org/) (com Git Bash instalado).
+* **Variáveis de Ambiente Recomendadas (Opcional, mas Altamente Recomendado)**:
+  Caso queira isolar seu `$HOME` e suas ferramentas do drive `C:`, configure as seguintes variáveis no menu *"Editar variáveis de ambiente para sua conta"* do Windows:
+  * `HOME`: `D:\%USERNAME%\home` (caminho para seu diretório pessoal)
+  * `APPS_BASE`: `D:\%USERNAME%\Apps` (pasta base de aplicativos e CLIs)
+  * `XDG_BIN_DIR`: `D:\%USERNAME%\home\bin`
+  * `XDG_CACHE_HOME`: `D:\%USERNAME%\home\.cache`
+  * `XDG_CONFIG_HOME`: `D:\%USERNAME%\home\.config`
+  * `XDG_DATA_HOME`: `D:\%USERNAME%\home\.local\share`
+  * `XDG_STATE_HOME`: `D:\%USERNAME%\home\.local\state`
 
-Neste repositório, focamos na organização do seu ambiente Bash dentro dos diretórios preconizados acima:
-
-1.  **Ponto de Entrada**:
-  * O Bash utiliza arquivos na raiz do `$HOME` para iniciar a sessão.
-  * Este projeto recomenda centralizar a lógica de carregamento no `~/.bashrc`, garantindo que tanto *interactive shells* quanto *login shells* (através do `~/.bash_profile` ou `~/.profile`) carreguem as configurações modulares.
-2.  **Configurações**:
-  * Todos os scripts de inicialização, aliases e funções serão armazenados de forma organizada em `~/.config/bashrc/`.
-3.  **Executáveis**:
-  * Scripts utilitários e wrappers (como os do `uv`) deste projeto residem em `~/bin/`, que o Git Bash adiciona ao seu `$PATH` automaticamente (convenção `/etc/profile`).
-  * O `~/.local/bin/` segue válido para binários instalados via Windows (ex.: `claude.exe` do instalador nativo do Claude Code) e é mantido no PATH pelo `bash-junctions.sh`.
-4.  **Ambiente**:
-  * Variáveis de ambiente são definidas nos scripts `envs` para redirecionar ferramentas (como Terraform e Python) a usarem `~/.local/share` e `~/.local/state`, mantendo o raiz de seu diretório pessoal sempre limpo.
-
-> **Nota sobre arquivos de inicialização**:
-> *   **`~/.bashrc`**: Executado em sessões interativas que não são de login (o padrão ao abrir um novo terminal).
-> *   **`~/.bash_profile`**: Executado em *login shells* (ex: via SSH ou no startup do Git Bash). Geralmente, ele deve conter um comando para carregar o `~/.bashrc`, e nada mais.
-> *   **`~/.profile`**: Um fallback genérico para shells compatíveis com o padrão POSIX (caso o `~/.bash_profile` não exista). Não utilizado neste projeto.
-
+  > [!IMPORTANT]
+  > Dependendo de como um processo do shell é invocado, o Windows pode não expandir variáveis dinâmicas aninhadas. Por isso, ao adicionar essas variáveis, **substitua `%USERNAME%` pelo nome real da sua conta de usuário**. 
 
 ---
 
+## ⚡ Instalação e Início Rápido
 
+Abra o seu **Git Bash** e execute os passos abaixo a partir da raiz do repositório clonado:
 
-## 📂 Estrutura do Repositório e Scripts
-
-Este projeto mantém os scripts em `src/home/.config/bashrc/`.
-
-Nota: o conteúdo orientado a dados e exemplos foi movido para `src/home/.local/share/bashrc/` no repositório. Durante a instalação, isso é copiado para `$XDG_DATA_HOME/bash/` (ou `$HOME/.local/share/bash/` quando `XDG_DATA_HOME` não estiver definido):
-
-* `docs/`: documentação do projeto;
-* `templates/`: templates de configuração e exemplos;
-* `utils/xdg-migrate.sh`: utilitário para migrar arquivos legados para locais XDG.
-
-A lista de arquivos instalada é controlada por `scripts/install-manifest.txt`.
-
-### 🔢 Ordem de Carregamento
-
-O `~/.bashrc` carrega os scripts `~/.config/bashrc/*.sh` em três etapas, garantindo que as dependências entre eles sejam respeitadas:
-
-1. **Núcleo (explícito, primeiro)**: `bash-envs.sh` e `bash-functions.sh` são carregados por nome, antes de tudo, pois definem o `APPS_BASE`, variáveis básicas e as funções de exibição (`displayFailure`, `displayWarning`, etc.) usadas pelos demais scripts.
-2. **Demais scripts (glob, ordem alfabética)**: o restante é carregado em ordem alfabética. Os nomes seguem o padrão `ferramenta-envs.sh` → `ferramenta-folders.sh`, garantindo que variáveis (`-envs`) sejam definidas antes das validações de diretório (`-folders`).
-3. **Junctions (explícito, por último)**: `bash-junctions.sh` é carregado no fim, pois depende de variáveis e diretórios definidos pelos demais scripts.
-
-### 🛠️ Scripts de Configuração de Ambiente (`-envs.sh`)
-
-Definem variáveis de ambiente, ajustam `$PATH` e (quando faz sentido) declaram aliases curtos. Scripts atuais:
-
-*   **bash-envs.sh**: Histórico do Bash, configurações de `less`/`vim` em XDG, aliases (`ll`, `la`, `grep`, `npp`).
-*   **git-envs.sh**: `GIT_CONFIG_GLOBAL` aderente ao XDG, aliases de log.
-*   **python-envs.sh**: `PYTHONHISTORY`, `PYTHONUNBUFFERED`, `PYTHONIOENCODING`, `PYTHONDONTWRITEBYTECODE`.
-*   **uv-envs.sh**: Diretórios e configurações do `uv` (cache, tools, registry, link-mode).
-*   **node-envs.sh**: `NODE_HOME`, `NODE_CURRENT`, variáveis `NPM_CONFIG_*` em XDG.
-*   **claude-code-envs.sh**: `CLAUDE_CONFIG_DIR` em XDG, validação de autenticação, aliases `c` e `cc`.
-
-### 📁 Scripts de Validação de Diretórios (`-folders.sh`)
-
-Criam diretórios e validam o `$PATH` para ferramentas configuradas nos `-envs.sh`. Separados para garantir que as variáveis já estejam definidas:
-
-*   **uv-folders.sh**: Cria diretórios do uv, valida desabilitação dos shims do Python da Windows Store.
-*   **node-folders.sh**: Cria diretórios do Node.js/npm e adiciona ao `$PATH`.
-
-### ⚡ Scripts de Funções (`-functions.sh`)
-
-Declaram funções complexas para automação. Atualmente:
-
-*   **bash-functions.sh**: Funções de exibição (`displayTitle`, `displayInfo`, `displaySuccess`, `displayFailure`, `displayWarning`), exportadas para sub-shells.
-
-> [!TIP]
-> Para cada script `-envs.sh` você pode criar o correspondente `-functions.sh` com helpers da ferramenta.
-
-### 🔧 Scripts auxiliares e infraestrutura
-
-*   **node-extra-certs.sh**: Renova certificado raiz CA (cache de 7 dias via `find -mtime`), exporta `NODE_EXTRA_CA_CERTS` e `SSL_CERT_FILE`.
-*   **bash-junctions.sh**: Resolve `HOME`, garante `~/.local/bin` no PATH (para binários Windows-installed como `claude.exe`), cria junctions em `%USERPROFILE%` para `.aws`, `.cache`, `.certs`, `.claude`, `.config`, `.local`, `.ssh`.
-*   **telemetry.sh**: Desabilita telemetria de CLIs de nuvem.
-
-### ⌨️ Scripts de Aliases (`-aliases.sh`)
-
-> [!TIP]
-> Declare nestes scripts os aliases pessoais. Atualmente os poucos aliases existentes estão inline nos respectivos `-envs.sh` por simplicidade — separe em `-aliases.sh` quando o volume justificar.
-
----
-
-## 💡 Implantação do conteúdo do repositório para `$HOME`
-
-Os comandos abaixo assumem que você está na raiz do repositório (onde está a pasta `src/home`). Eles copiam os arquivos organizados do repositório para o seu `$HOME` preservando permissões e estruturas.
-
-1) (Opcional) Fazer um backup prévio antes de sobrescrever:
+### 1. Fazer Backup Preventivo (Recomendado)
+Antes de qualquer alteração, gere um backup seguro de todos os arquivos de configuração atuais que seriam sobrescritos:
 
 ```bash
-bash scripts/backup.sh
+./scripts/backup.sh
 ```
+> [!NOTE]
+> Os arquivos são arquivados com data e hora em `$XDG_STATE_HOME/bashrc/backups/` (ou `~/.local/state/bashrc/backups/`). O processo é 100% não-destrutivo.
 
-O script lê `scripts/install-manifest.txt` para identificar quais arquivos já existentes em
-`$HOME`/`$XDG_DATA_HOME` seriam sobrescritos pela instalação, e os arquiva em
-`$XDG_STATE_HOME/bashrc/backups/`. É independente de `install.sh` — pode ser executado
-isoladamente a qualquer momento.
-
-2) Usar o script de deploy do projeto. Ele lê `scripts/install-manifest.txt` como fonte de verdade:
+### 2. Instalar os Arquivos
+Execute o script de instalação orientado pelo manifesto de arquivos do projeto:
 
 ```bash
-bash scripts/install.sh
+./scripts/install.sh
 ```
 
-O script copia os arquivos listados em `scripts/install-manifest.txt` para o seu `$HOME`.
+O instalador copia a estrutura para o seu `$HOME` e configura:
+* `~/.bashrc` e `~/.bash_profile`
+* Diretórios de inicialização em `~/.config/bashrc/`
+* Utilitários executáveis em `~/bin/`
+* Templates e documentação em `~/.local/share/bashrc/`
 
-3) Verificar a instalação:
+### 3. Ativar as Configurações
+Para que o novo ambiente entre em vigor com todas as variáveis e junções atualizadas, você deve fechar:
+
+   * Todas as sessões abertas do **Git Bash** (avulsas e integradas).
+   * Suas **IDEs** (VS Code, PyCharm, OpenCode) e **assistentes de código** (Google Antigravity, Claude Desktop).
+
+Ao iniciar um novo terminal, o fluxo de inicialização normal do bash executará automaticamente os scripts RC deste projeto.
+
+### 4. Validar o Ambiente
+Execute o comando de diagnóstico incluído para checar a detecção das suas ferramentas:
 
 ```bash
-ls -l $HOME/.bash{_profile,rc}
-ls -l $HOME/.config/bashrc
-ls -l $HOME/bin
+show-versions
 ```
-
-Observações:
-- Estes comandos funcionam no Git Bash. Em PowerShell/Windows nativo, use caminhos e comandos compatíveis.
-- `rsync` é preferível por ser incremental e seguro; se não estiver instalado, `cp -a` é uma alternativa aceitável.
-
 
 ---
 
+## 🏛️ Como o Ambiente Funciona
 
-## 🚀 Você está pronto!!
+### Estrutura de Diretórios no seu `$HOME`
 
-Seguem algumas dicas finais:
+Após a instalação, seus arquivos estarão organizados conforme o padrão XDG/FHS:
 
-* **Caminhos (Paths)**: O Git Bash simula Unix. Ao definir variáveis, prefira caminhos no formato `/c/Users/nome` em vez de `C:\Users\nome`.
-* **Backup**: Graças à separação modular, você pode copiar apenas o `$HOME/.bashrc` e  diretório `$HOME/.config` para um novo equipamento. Os demais arquivos serão criados automaticamente pelos scripts deste projeto no destino.
+| Diretório | Finalidade |
+| :--- | :--- |
+| `~/.bashrc` | Ponto de entrada central para shells interativos. Define variáveis XDG e carrega os módulos. |
+| `~/.bash_profile` | Ponto de entrada para login shells; delega a inicialização diretamente ao `.bashrc`. |
+| `~/.config/bashrc/` | Scripts modulares carregados em etapas na abertura do terminal. |
+| `~/bin/` | Utilitários do projeto adicionados automaticamente ao `$PATH` pelo Git Bash. |
+| `~/.local/bin/` | Binários instalados pelo Windows ou usuário (ex.: `claude.exe`, `jq.exe`). |
+| `~/.local/share/bashrc/` | Templates de projetos, exemplos de configuração e documentações auxiliares. |
+| `~/.local/state/` | Histórico do Bash, histórico do Python e backups do instalador. |
+| `~/.cache/` | Caches de ferramentas como `uv`, gerenciadores de pacotes e linters. |
+
+---
+
+### Junções NTFS Transparentes (`bash-junctions.sh`)
+
+Muitos utilitários e CLIs nativos do Windows não respeitam variáveis XDG ou a variável POSIX `HOME` e tentam criar pastas diretamente em `C:\Users\%USERNAME%`.
+
+Quando seu `$HOME` está configurado em outro caminho (como `D:\...`), o módulo `bash-junctions.sh` cria automaticamente **Junções de Diretório NTFS** (`mklink /J`) para redirecionar essas pastas:
+
+```
+C:\Users\%USERNAME%\.aws      ──(Junction)──►  D:\<USUARIO>\home\.aws
+C:\Users\%USERNAME%\.claude   ──(Junction)──►  D:\<USUARIO>\home\.config\claude
+C:\Users\%USERNAME%\.config   ──(Junction)──►  D:\<USUARIO>\home\.config
+C:\Users\%USERNAME%\.local    ──(Junction)──►  D:\<USUARIO>\home\.local
+C:\Users\%USERNAME%\.ssh      ──(Junction)──►  D:\<USUARIO>\home\.ssh
+```
+
+> [!IMPORTANT]
+> **Política Não-Destrutiva**: Se uma pasta já existir em `%USERPROFILE%` como diretório real (e não como junção), o script **não** a apaga nem sobrescreve. Ele emite um aviso no terminal orientando você a migrar os dados e criar a junção com segurança.
+
+---
+
+## 🧰 Utilitários de Linha de Comando Inclusos (`~/bin/`)
+
+O repositório disponibiliza comandos utilitários prontos para o uso diário:
+
+### 🔍 Diagnóstico e Informações
+* **`show-versions`**: Exibe um resumo consolidado das versões de runtimes, CLIs de Cloud (AWS, GCP), Docker, Git e ferramentas de desenvolvimento instaladas.
+* **`claude-info`**: Exibe o status da instalação, versão, diretório de configuração XDG e estado de autenticação do Claude Code.
+* **`git-info`**: Apresenta informações detalhadas do repositório Git local (branch atual, status, commits recentes, remotes).
+
+### 🟢 Gerenciamento de Versões do Node.js
+Dispensa gerenciadores pesados quando você utiliza versões descompactadas do Node.js sob `$APPS_BASE`:
+* **`node-list`**: Lista todas as versões do Node.js disponíveis em `$NODE_HOME`, indicando qual está marcada como padrão (*default).
+* **`node-default <versao>`**: Alterna a versão ativa do Node.js criando ou atualizando a junção para o binário padrão.
+* **`node-install <versao>`**: Auxilia na instalação ou configuração de uma nova versão do Node.js.
+* **`node-info`**: Detalha os caminhos de execução do `node` e `npm` ativos na sessão.
+
+### 🐍 Automação de Projetos Python com `uv`
+Scaffolding instantâneo de projetos seguindo boas práticas de empacotamento:
+* **`uv-new-app <nome>`**: Cria uma aplicação Python estruturada em `src layout` com gerenciamento de dependências pelo `uv`.
+* **`uv-new-lib <nome>`**: Cria uma biblioteca Python modular empacotada pronta para distribuição.
+* **`uv-new-project <nome>`**: Inicializa um projeto Python padrão com `pyproject.toml` e `.python-version`.
+* **`uv-new-backend <nome>`**: Cria uma base de backend completa com FastAPI / dependências modernas.
+* **`uv-new-poc <nome>`**: Cria rapidamente uma estrutura para Prova de Conceito (PoC) com scripts e notebooks isolados.
+* **`uv-info`**: Exibe versões do Python gerenciadas pelo `uv` e detalhes do ambiente virtual ativo.
+
+### 🐙 Helpers de Git e Produtividade
+* **`git-branch`**: Visualização formatada e limpa de branches locais e remotas com status de sincronização.
+* **`git-config`**: Valida e exibe as configurações globais ativas do Git (`user.name`, `user.email`, `core.editor`).
+* **`git-merge-tests`**: Auxilia na validação e merge seguro de branches de teste.
+* **`urlencode <texto>` / `urldecode <texto>`**: Utilitários rápidos para codificar e decodificar strings no padrão URL.
+* **`echodo <comando>`**: Exibe o comando formatado antes de executá-lo (ótimo para scripts de automação e tutoriais).
+
+---
+
+## 📑 Templates de Configuração
+
+Localizados em `~/.local/share/bashrc/templates/`, esses modelos ajudam a padronizar seus projetos e ferramentas:
+
+* **Python e uv**:
+  * `python/pyproject.toml.example`: Configuração base completa com metadados do projeto e ferramentas.
+  * `python/ruff.toml.example`: Regras recomendadas de linting e formatação com Ruff.
+  * `python/uv.toml.example`: Preferências de resolução e cache do `uv`.
+  * `dot-env.example`: Modelo para variáveis de ambiente `.env`.
+* **Editores e Assistentes**:
+  * `vscode/settings.json`: Configurações recomendadas para o VS Code integrado ao Git Bash e runtimes XDG.
+  * `claude/home-dot-claude-settings.json`: Configurações globais para o Claude Code.
+  * `claude/project-dot-claude-settings.json`: Configurações locais para projetos assistidos por IA.
+
+---
+
+## 🔄 Manutenção e Atualizações
+
+### Atualizando seu Ambiente
+Quando novas melhorias ou utilitários forem adicionados ao repositório:
+
+1. Atualize o repositório local:
+   ```bash
+   git pull origin main
+   ```
+2. Reexecute a instalação para sincronizar os arquivos atualizados em seu `$HOME`:
+   ```bash
+   ./scripts/install.sh
+   ```
+
+### Adicionando Suas Próprias Configurações Pessoais
+Para manter sua instalação fácil de atualizar sem criar conflitos com futuras atualizações do repositório:
+* Adicione novos scripts customizados em `~/.config/bashrc/meus-aliases-envs.sh`.
+* O `.bashrc` carrega automaticamente qualquer arquivo `.sh` existente nessa pasta em ordem alfabética.
+
+---
+
+## ❓ Perguntas Frequentes (FAQ)
+
+**1. O Git Bash reclama de erro de formato de caminhos?**  
+No Git Bash, utilize sempre caminhos no formato POSIX (ex.: `/c/Users/nome` ou `/d/nome/home`). Evite o formato Windows com barras invertidas (`C:\...`) em scripts e no `.bashrc`.
+
+**2. As Junções NTFS exigem privilégios de Administrador?**  
+Não. No Windows, Junções de Diretório (`mklink /J`) podem ser criadas por qualquer usuário padrão, sem necessidade de privilégios elevados ou Modo de Desenvolvedor.
+
+**3. O que fazer se o script acusar conflito em uma pasta de `%USERPROFILE%`?**  
+Se você já tinha uma pasta como `C:\Users\%USERNAME%\.aws`, o script avisará que ela precisa virar uma junção. Basta mover o conteúdo dessa pasta para o destino real correspondente (`D:\<USUARIO>\home\.aws`) e reabrir o terminal. O `bash-junctions.sh` criará a junção automaticamente.

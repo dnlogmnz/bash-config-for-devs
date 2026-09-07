@@ -1,6 +1,10 @@
-# Environments
+# ==========================================
+# Ambientes e Variáveis de Escopo Local
+# ==========================================
 .env
 .env.backup
+.env.local
+.env.*.local
 .envrc
 .venv
 env/
@@ -9,37 +13,73 @@ ENV/
 env.bak/
 venv.bak/
 
-# Temporary files
-*.tmp
+# ==========================================
+# Arquivos Temporários e Logs de Execução
+# ==========================================
 *.log
+*.tmp
+*.temp
+tmp/
+temp/
 *.bak
-*.swp
 *.orig
-~$*
+*.swp
+*.swo
 *~
+~$*
 
-# Binaries and compiled files
+# ==========================================
+# Dados de Tempo de Execução (Runtime)
+# ==========================================
+pids
+*.pid
+*.seed
+*.pid.lock
+.bash_history
+*.lock
+
+# ==========================================
+# Binários e Arquivos Compilados
+# ==========================================
 *.exe
 *.exe~
 *.dll
 *.so
 *.dylib
 
-# Runtime data
-pids
-*.pid
-*.seed
-*.pid.lock
+# ==========================================
+# Chaves Secretas e Certificados (Segurança)
+# ==========================================
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+google-services.json
 
-# Editor/IDE
-.idea/
+# ==========================================
+# Editores de Código e IDEs
+# ==========================================
+# VS Code (Bloqueio total da pasta e áreas de trabalho)
 .vscode/
 *.code-workspace
 
-# Claude Code (configurações pessoais/locais do projeto)
-.claude/settings.local.json
+# Claude Code (Configurações locais)
+.claude/
 
-# Windows system files
+# IntelliJ / PyCharm / Outros da JetBrains
+.idea/
+
+# ==========================================
+# Arquivos de Sistema (macOS e Windows)
+# ==========================================
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
 Thumbs.db
 Thumbs.db:encryptable
 ehthumbs.db
@@ -48,19 +88,8 @@ $RECYCLE.BIN/
 *.lnk
 *.stackdump
 
-# Certificates and private keys (sensitive)
-*.pem
-*.key
-*.p12
-*.pfx
-
-# Testing
+# ==========================================
+# Testes e Diretórios Extras
+# ==========================================
+EXTRAS/
 *.test
-
-# Keystore files
-*.jks
-*.keystore
-
-# Google Services (e.g. APIs or Firebase)
-google-services.json
-
