@@ -69,7 +69,7 @@ A solução é criar **junctions de diretório** (`mklink /J`) em `%USERPROFILE%
 
 ## Junções criadas pelo `bash-junctions.sh`
 
-Toda vez que um novo Git Bash é aberto, o script `bash-junctions.sh` verifica e cria (se necessário) as seguintes junctions:
+Toda vez que um novo Git Bash é aberto, o script `bash-junctions.sh` verifica e cria (se necessário) as seguintes junctions, desde que `$HOME` e `%USERPROFILE%` sejam locais diferentes:
 
 | Origem (`%USERPROFILE%`)       | Destino (`$HOME`)                    | Uso típico                              |
 |--------------------------------|--------------------------------------|-----------------------------------------|
@@ -85,9 +85,11 @@ Toda vez que um novo Git Bash é aberto, o script `bash-junctions.sh` verifica e
 
 ## Como o script se comporta
 
+`HOME`, `XDG_*` e `CLAUDE_CONFIG_DIR` são definidos antes pelo `.bashrc` e pelos scripts de ambiente. O `bash-junctions.sh` não altera essas variáveis: ele usa exatamente os caminhos recebidos. Se `$HOME` e `%USERPROFILE%` representarem o mesmo local, o script termina imediatamente sem alterar o `PATH`, criar diretórios ou executar `mklink`.
+
 Para cada junction, a função `ensure_junction()` segue este fluxo:
 
-1. **Caminho rápido (estado estável):** se a origem já é uma junction (`[ -L "$src" ]`), retorna imediatamente sem forks.
+1. **Caminho rápido (estado estável):** se a origem já é uma junction (`[ -L "$src" ]`), retorna imediatamente sem conversões ou `cmd.exe`.
 2. **Se a origem não existe:** cria o destino (caso falte) e executa `mklink /J "$src_w" "$tgt_w"` via `cmd.exe`. Em sucesso, emite `displaySuccess`; em falha, emite `displayFailure` com a mensagem de erro do Windows.
 3. **Se a origem existe mas não é uma junction** (é um diretório/arquivo real): emite mensagens orientando o usuário a:
    - Combinar manualmente o conteúdo com o destino;

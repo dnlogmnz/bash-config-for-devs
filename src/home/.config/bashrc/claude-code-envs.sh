@@ -29,7 +29,7 @@ if [[ -z "$CLAUDE_CONFIG_DIR" ]]; then
     fi
 fi
 
-# Converte caminhos Windows para o formato Unix quando necessário.
+# Quando CLAUDE_CONFIG_DIR estiver no formato Windows, converte para o formato Unix.
 if [[ "$CLAUDE_CONFIG_DIR" == [A-Za-z]:* ]]; then
     export CLAUDE_CONFIG_DIR="$(cygpath -u -- "$CLAUDE_CONFIG_DIR")"
 fi
@@ -38,25 +38,24 @@ fi
 # Validação das configurações obrigatórias e recomendadas
 # ---------------------------------------------------------------------------------------------
 
-# Verdadeiro se a chave está definida no ambiente OU presente no settings.json.
-# Lê 'settings_content' do escopo do chamador (escopo dinâmico do bash).
+# Recebe um nome de variável e verifica se está definida no ambiente ou no settings.json.
 _claude_is_set() {
     local key="$1"
-    [[ -n "${!key}" ]]                          && return 0   # variável de ambiente
-    [[ "$settings_content" == *"\"$key\""* ]]   && return 0   # bloco "env" do settings.json
-    return 1
+    [[ -n "${!key}" ]]                          && return 0  # é variável de ambiente
+    [[ "$settings_content" == *"\"$key\""* ]]   && return 0  # está no bloco "env" do settings.json
+    return 1  # não foi definida nem no ambiente nem no settings.json
 }
 
+# Valida as variáveis e credenciais obrigatórias do Claude Code
 _claude_validate_required_config() {
 
-    # Lê o settings.json global uma única vez via redireção builtin (sem fork).
-    # Reutilizado pelas validações abaixo para inspecionar o bloco "env".
+    # Carrega o settings.json do Claude Code (se existir) para validar as variáveis obrigatórias.
     local config_dir="${CLAUDE_CONFIG_DIR%/}"
     local settings_json="$config_dir/settings.json"
     local settings_content=""
     [[ -f "$settings_json" ]] && settings_content="$(< "$settings_json")"
 
-    # --- CLAUDE_CODE_GIT_BASH_PATH -----------------------------------------------------------
+    # --- Validar se CLAUDE_CODE_GIT_BASH_PATH está definida ----------------------------------
     # Validação em ordem de prioridade (linha de comando é ignorada aqui):
     #   1. Variável de ambiente → se definida, foi escolha consciente do dev → OK
     #   2. settings.json        → local esperado pelo projeto (bloco "env")  → OK
@@ -67,7 +66,7 @@ _claude_validate_required_config() {
             "CLAUDE_CODE_GIT_BASH_PATH não definida → adicione no bloco \"env\" de $settings_json"
     fi
 
-    # --- Autenticação ------------------------------------------------------------------------
+    # --- Validar qual método de autenticação está sendo usado ----------------------------------
     # Métodos explícitos, mutuamente exclusivos (apenas UM deve estar definido):
     #   - ANTHROPIC_API_KEY        → API Key do Console da Anthropic
     #   - ANTHROPIC_AUTH_TOKEN     → Token de AI Gateway / LiteLLM
@@ -76,10 +75,9 @@ _claude_validate_required_config() {
     #   - CLAUDE_CODE_USE_FOUNDRY  → Azure Foundry (API Key / Entra ID, geridas pelo Azure SDK)
     # Cada método é checado no ambiente OU no settings.json (via _claude_is_set).
     #
-    # OAuth (login Claude AI) é o fallback padrão e NÃO entra na contagem de
-    # conflito: o token salvo em disco coexiste de forma dormente com um método
-    # explícito (a API Key/provider vence). Só importa quando nenhum método
-    # explícito foi definido.
+    # O método padrão de autenticação no Claude Code é o OAuth (ou seja, login Claude AI),
+    # e NÃO entra na contagem de conflito: se existe um token salvo em disco e uma das variáveis
+    # acima foi definida, o token é ignorado silenciosamente.
     # ------------------------------------------------------------------------------------------
     local auth_methods=()
     _claude_is_set ANTHROPIC_API_KEY       && auth_methods+=("ANTHROPIC_API_KEY")
@@ -97,7 +95,7 @@ _claude_validate_required_config() {
             "Múltiplos métodos de autenticação definidos — use apenas um: ${auth_methods[*]}"
     fi
 
-    # --- settings.json ------------------------------------------------------------------------
+    # --- Validar se arquivo settings.json existe ----------------------------------------------
     if [[ ! -f "$settings_json" ]]; then
         displayWarning \
             "Claude Code" \
